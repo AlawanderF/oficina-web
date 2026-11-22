@@ -16,22 +16,8 @@ updates:
         dependency-type: development
         update-types: [minor, patch]
     ignore:
-      # Majors com breaking changes conhecidas: atualizar manualmente
-      - dependency-name: "prisma"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@prisma/client"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "zod"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@mantine/*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "react*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@types/react*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "express"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@types/express"
+      # Política: atualizações major (breaking changes) são feitas manualmente, com revisão
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
