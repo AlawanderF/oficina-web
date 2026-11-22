@@ -18,3 +18,8 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# testes de ponta a ponta (Playwright)
+playwright-report/
+test-results/
+e2e/.auth/

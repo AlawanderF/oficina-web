@@ -105,6 +105,49 @@ jobs:
         if: failure()
         run: cat api.log || true
 
+  e2e:
+    name: Testes de ponta a ponta (navegador)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: oficina
+          POSTGRES_PASSWORD: oficina
+          POSTGRES_DB: oficina
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U oficina -d oficina"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Banco como no README (.env, migrations e seed)
+        run: |
+          cp api/.env.example api/.env
+          npm run migrate -w api
+          npm run seed -w api
+      - name: Navegador do Playwright
+        run: npx playwright install --with-deps chromium
+      # Sobe a API e o frontend (playwright.config.ts) e usa as telas como um usuário
+      - name: Testes de ponta a ponta
+        run: npm run test:e2e
+      - name: Relatório (em caso de falha)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
+
   auditoria:
     name: Auditoria de dependências
     runs-on: ubuntu-latest
