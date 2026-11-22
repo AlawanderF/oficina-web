@@ -16,14 +16,16 @@
     "dev:api": "npm run dev -w api",
     "dev:frontend": "npm run dev -w frontend",
     "build": "npm run build -w shared && npm run build -w api && npm run build -w frontend",
-    "typecheck": "tsc -p api/tsconfig.json && tsc -p frontend/tsconfig.json",
+    "typecheck": "tsc -p api/tsconfig.json && tsc -p frontend/tsconfig.json && tsc -p e2e/tsconfig.json",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run test -w shared && npm run test -w api"
+    "test": "npm run test -w shared && npm run test -w api",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@playwright/test": "^1.48.2",
     "eslint": "^9.15.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.5.8",

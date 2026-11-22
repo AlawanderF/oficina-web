@@ -189,11 +189,17 @@ npm run build -w frontend   # build do frontend
 npm run lint                # ESLint
 npm run format:check        # Prettier
 npm test                    # testes do shared + integração da API (requer o banco)
+npm run test:e2e            # testes de ponta a ponta no navegador (requer o banco + seed)
 ```
+
+Os **testes de ponta a ponta** (pasta `e2e/`, com Playwright) abrem o sistema num navegador e usam as telas como um usuário: cadastro, login, CRUD de clientes, validações, CPF repetido, selects, filtro, menu recolhível e layout no celular. Eles sobem a API e o frontend sozinhos (ou reaproveitam os que já estiverem rodando). Localmente usam o Google Chrome instalado. Sem o Chrome, rode antes `npx playwright install chromium`.
+
+> O seed recria os dados de exemplo, mas **não apaga as contas de usuário**: rodar o seed de novo preserva quem se cadastrou (e restaura a senha do usuário do professor).
 
 Cada push e cada pull request rodam no **GitHub Actions**:
 
 - **CI:** lint, formatação, checagem de tipos, os dois builds e os testes de integração contra um PostgreSQL real. O mesmo job executa o passo a passo deste README (`.env`, migrations e seed) e um smoke test com a API no ar, o Swagger e o login do seed.
+- **Testes de ponta a ponta:** num job próprio, o Playwright testa as telas no Chromium com a API e o banco de verdade.
 - **CodeQL:** análise estática de segurança.
 - **Dependabot:** atualização semanal de dependências. Um bot aprova e faz o merge automático só das atualizações _patch/minor_, e só depois que o CI passa. Atualizações _major_ pedem revisão humana.
 
