@@ -7,15 +7,19 @@ const SEED_EMAIL = "professor@oficina.com";
 const SEED_SENHA = "senha1234";
 
 async function main() {
-  // Limpa na ordem das dependências (filhas antes das pais) para o seed ser idempotente
+  // Recria os dados de exemplo, na ordem das dependências (filhas antes das pais).
+  // As contas de usuário NÃO são apagadas: rodar o seed de novo preserva quem se cadastrou.
   await prisma.ordemServico.deleteMany();
   await prisma.veiculo.deleteMany();
   await prisma.mecanico.deleteMany();
   await prisma.cliente.deleteMany();
-  await prisma.usuario.deleteMany();
 
-  await prisma.usuario.create({
-    data: { nome: "Professor", email: SEED_EMAIL, senha: await bcrypt.hash(SEED_SENHA, 10) },
+  // Usuário do professor: cria se não existe; se existe, restaura a senha documentada no README
+  const senhaHash = await bcrypt.hash(SEED_SENHA, 10);
+  await prisma.usuario.upsert({
+    where: { email: SEED_EMAIL },
+    update: { nome: "Professor", senha: senhaHash },
+    create: { nome: "Professor", email: SEED_EMAIL, senha: senhaHash },
   });
 
   const clientes = await Promise.all(
