@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Usuário do sistema (login) — não conta nas 4 tabelas do tema
+model Usuario {
+  id    Int    @id @default(autoincrement())
+  nome  String
+  email String @unique
+  senha String // hash bcrypt, nunca a senha digitada
+}
+
+model Autor {
+  id            Int     @id @default(autoincrement())
+  nome          String
+  nacionalidade String
+  livros        Livro[]
+}
+
+model Livro {
+  id            Int          @id @default(autoincrement())
+  titulo        String
+  isbn          String       @unique
+  anoPublicacao Int
+  autorId       Int
+  autor         Autor        @relation(fields: [autorId], references: [id])
+  emprestimos   Emprestimo[]
+}
+
+model Leitor {
+  id          Int          @id @default(autoincrement())
+  nome        String
+  email       String       @unique
+  cpf         String       @unique
+  emprestimos Emprestimo[]
+}
+
+// Ligada a duas outras tabelas: Livro e Leitor
+model Emprestimo {
+  id             Int       @id @default(autoincrement())
+  livroId        Int
+  leitorId       Int
+  dataEmprestimo DateTime
+  dataDevolucao  DateTime?
+  livro          Livro     @relation(fields: [livroId], references: [id])
+  leitor         Leitor    @relation(fields: [leitorId], references: [id])
+}
