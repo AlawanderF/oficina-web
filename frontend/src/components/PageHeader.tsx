@@ -10,10 +10,8 @@ interface Props {
 export default function PageHeader({ titulo, descricao, acoes }: Props) {
   return (
     <Group justify="space-between" align="flex-end" mb="lg" wrap="wrap" gap="md">
-      <Stack gap={2}>
-        <Title order={2} fz={26}>
-          {titulo}
-        </Title>
+      <Stack gap={4}>
+        <Title order={1}>{titulo}</Title>
         {descricao && (
           <Text c="dimmed" size="sm">
             {descricao}

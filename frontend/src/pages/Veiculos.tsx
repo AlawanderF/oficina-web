@@ -1,4 +1,5 @@
-import { Badge, Button, NumberInput, Select, SimpleGrid, Stack, Table, Text, TextInput } from "@mantine/core";
+import { Button, NumberInput, Select, SimpleGrid, Stack, Table, Text, TextInput } from "@mantine/core";
+import Placa from "../components/Placa";
 import { IconPlus } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { veiculoSchema } from "shared";
@@ -92,9 +93,7 @@ export default function Veiculos() {
         {filtrados.map((v) => (
           <Table.Tr key={v.id}>
             <Table.Td>
-              <Badge variant="outline" color="dark" radius="sm" className="mono" size="lg">
-                {formatarPlaca(v.placa)}
-              </Badge>
+              <Placa placa={v.placa} />
             </Table.Td>
             <Table.Td>
               <Text fw={600} size="sm">

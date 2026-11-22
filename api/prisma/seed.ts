@@ -65,77 +65,168 @@ async function main() {
     ].map((data) => prisma.mecanico.create({ data })),
   );
 
-  const d = (s: string) => new Date(s);
+  /**
+   * Datas RELATIVAS a hoje: o histórico parece sempre atual, não importa quando o seed rode.
+   * Coluna DATE: meia-noite UTC do dia.
+   */
+  const diasAtras = (n: number) => {
+    const hoje = new Date();
+    return new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - n));
+  };
+  const [gol, onix, argo, corolla, civic, hb20] = veiculos;
+  const [roberto, fernanda, marcos] = mecanicos;
+
+  // Em ordem cronológica: as mais recentes ficam com os maiores números de OS
+  const ordens = [
+    {
+      v: corolla,
+      m: roberto,
+      d: "Revisão de 40.000 km com troca de velas e filtros",
+      s: "CONCLUIDA",
+      valor: 980,
+      ab: 168,
+      con: 166,
+    },
+    {
+      v: gol,
+      m: fernanda,
+      d: "Troca de pastilhas de freio traseiras",
+      s: "CONCLUIDA",
+      valor: 420,
+      ab: 150,
+      con: 149,
+    },
+    {
+      v: civic,
+      m: marcos,
+      d: "Reparo no chicote do farol esquerdo",
+      s: "CONCLUIDA",
+      valor: 310,
+      ab: 141,
+      con: 140,
+    },
+    {
+      v: argo,
+      m: roberto,
+      d: "Limpeza de bicos injetores e corpo de borboleta",
+      s: "CONCLUIDA",
+      valor: 560,
+      ab: 122,
+      con: 121,
+    },
+    {
+      v: hb20,
+      m: fernanda,
+      d: "Substituição de bieletas e buchas da bandeja",
+      s: "CONCLUIDA",
+      valor: 1150,
+      ab: 104,
+      con: 101,
+    },
+    { v: onix, m: roberto, d: "Troca do kit de embreagem", s: "CONCLUIDA", valor: 1980, ab: 92, con: 88 },
+    {
+      v: corolla,
+      m: marcos,
+      d: "Diagnóstico e troca do sensor de oxigênio",
+      s: "CONCLUIDA",
+      valor: 740,
+      ab: 75,
+      con: 74,
+    },
+    {
+      v: gol,
+      m: roberto,
+      d: "Troca de óleo e filtros (óleo, ar e combustível)",
+      s: "CONCLUIDA",
+      valor: 389.9,
+      ab: 51,
+      con: 51,
+    },
+    {
+      v: argo,
+      m: fernanda,
+      d: "Substituição de pastilhas e discos de freio dianteiros",
+      s: "CONCLUIDA",
+      valor: 1240,
+      ab: 43,
+      con: 41,
+    },
+    {
+      v: corolla,
+      m: marcos,
+      d: "Diagnóstico de falha intermitente no alternador",
+      s: "CONCLUIDA",
+      valor: 680.5,
+      ab: 33,
+      con: 30,
+    },
+    {
+      v: argo,
+      m: marcos,
+      d: "Troca de bateria (cliente desistiu do serviço)",
+      s: "CANCELADA",
+      valor: 0,
+      ab: 17,
+      con: null,
+    },
+    {
+      v: civic,
+      m: roberto,
+      d: "Higienização do ar-condicionado e troca do filtro de cabine",
+      s: "CONCLUIDA",
+      valor: 290,
+      ab: 12,
+      con: 11,
+    },
+    {
+      v: civic,
+      m: roberto,
+      d: "Revisão de 60.000 km com troca de correia dentada",
+      s: "EM_ANDAMENTO",
+      valor: 2150,
+      ab: 8,
+      con: null,
+    },
+    { v: hb20, m: fernanda, d: "Alinhamento e balanceamento", s: "CONCLUIDA", valor: 180, ab: 6, con: 6 },
+    {
+      v: onix,
+      m: fernanda,
+      d: "Troca de amortecedores dianteiros e traseiros",
+      s: "EM_ANDAMENTO",
+      valor: 1890,
+      ab: 4,
+      con: null,
+    },
+    {
+      v: hb20,
+      m: marcos,
+      d: "Instalação de central multimídia e câmera de ré",
+      s: "ABERTA",
+      valor: 950,
+      ab: 2,
+      con: null,
+    },
+    {
+      v: gol,
+      m: roberto,
+      d: "Ruído no motor em marcha lenta: avaliação",
+      s: "ABERTA",
+      valor: 150,
+      ab: 1,
+      con: null,
+    },
+  ] as const;
+
   await prisma.ordemServico.createMany({
-    data: [
-      {
-        veiculoId: veiculos[0].id,
-        mecanicoId: mecanicos[0].id,
-        descricao: "Troca de óleo e filtros (óleo, ar e combustível)",
-        status: "CONCLUIDA",
-        valor: 389.9,
-        dataAbertura: d("2026-10-02"),
-        dataConclusao: d("2026-10-02"),
-      },
-      {
-        veiculoId: veiculos[2].id,
-        mecanicoId: mecanicos[1].id,
-        descricao: "Substituição de pastilhas e discos de freio dianteiros",
-        status: "CONCLUIDA",
-        valor: 1240.0,
-        dataAbertura: d("2026-10-10"),
-        dataConclusao: d("2026-10-12"),
-      },
-      {
-        veiculoId: veiculos[3].id,
-        mecanicoId: mecanicos[2].id,
-        descricao: "Diagnóstico de falha intermitente no alternador",
-        status: "CONCLUIDA",
-        valor: 680.5,
-        dataAbertura: d("2026-10-20"),
-        dataConclusao: d("2026-10-23"),
-      },
-      {
-        veiculoId: veiculos[4].id,
-        mecanicoId: mecanicos[0].id,
-        descricao: "Revisão de 60.000 km com troca de correia dentada",
-        status: "EM_ANDAMENTO",
-        valor: 2150.0,
-        dataAbertura: d("2026-11-14"),
-      },
-      {
-        veiculoId: veiculos[1].id,
-        mecanicoId: mecanicos[1].id,
-        descricao: "Alinhamento, balanceamento e troca de amortecedores",
-        status: "EM_ANDAMENTO",
-        valor: 1890.0,
-        dataAbertura: d("2026-11-18"),
-      },
-      {
-        veiculoId: veiculos[5].id,
-        mecanicoId: mecanicos[2].id,
-        descricao: "Instalação de central multimídia e câmera de ré",
-        status: "ABERTA",
-        valor: 950.0,
-        dataAbertura: d("2026-11-20"),
-      },
-      {
-        veiculoId: veiculos[0].id,
-        mecanicoId: mecanicos[0].id,
-        descricao: "Ruído no motor em marcha lenta: avaliação",
-        status: "ABERTA",
-        valor: 150.0,
-        dataAbertura: d("2026-11-21"),
-      },
-      {
-        veiculoId: veiculos[2].id,
-        mecanicoId: mecanicos[2].id,
-        descricao: "Troca de bateria (cliente desistiu do serviço)",
-        status: "CANCELADA",
-        valor: 0,
-        dataAbertura: d("2026-11-05"),
-      },
-    ],
+    data: ordens.map((o) => ({
+      veiculoId: o.v!.id,
+      mecanicoId: o.m!.id,
+      descricao: o.d,
+      status: o.s,
+      valor: o.valor,
+      dataAbertura: diasAtras(o.ab),
+      dataConclusao: o.con === null ? null : diasAtras(o.con),
+    })),
   });
 
   console.log(`✅ Seed concluído. Login: ${SEED_EMAIL} / ${SEED_SENHA}`);

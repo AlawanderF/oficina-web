@@ -1,9 +1,9 @@
 import type { StatusOrdem } from "shared";
 
-/** Cor do badge de cada status de OS. */
+/** Cor (paleta do Mantine) de cada status de OS: badges, gráfico e legendas usam a mesma. */
 export const COR_STATUS: Record<StatusOrdem, string> = {
   ABERTA: "blue",
   EM_ANDAMENTO: "yellow",
-  CONCLUIDA: "teal",
+  CONCLUIDA: "green",
   CANCELADA: "gray",
 };

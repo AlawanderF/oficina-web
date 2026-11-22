@@ -6,37 +6,41 @@ import {
   Burger,
   Group,
   Menu,
-  NavLink,
   ScrollArea,
-  Stack,
   Text,
-  ThemeIcon,
   Tooltip,
   UnstyledButton,
   useComputedColorScheme,
   useMantineColorScheme,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useLocalStorage } from "@mantine/hooks";
 import {
+  type Icon,
   IconCar,
   IconChevronDown,
+  IconChevronRight,
   IconClipboardList,
   IconLayoutDashboard,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
   IconLogout,
   IconMoon,
   IconSun,
-  IconTool,
-  IconUsers,
   IconUserCog,
+  IconUsers,
 } from "@tabler/icons-react";
 import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { encerrarSessao, estaAutenticado, usuarioAtual } from "../services/sessao";
+import Marca from "./Marca";
 
-const secoes = [
-  {
-    titulo: "Visão geral",
-    itens: [{ to: "/", label: "Painel", icon: IconLayoutDashboard }],
-  },
+interface ItemMenu {
+  to: string;
+  label: string;
+  icon: Icon;
+}
+
+const secoes: { titulo: string; itens: ItemMenu[] }[] = [
+  { titulo: "Visão geral", itens: [{ to: "/", label: "Painel", icon: IconLayoutDashboard }] },
   {
     titulo: "Operação",
     itens: [{ to: "/ordens-servico", label: "Ordens de serviço", icon: IconClipboardList }],
@@ -51,6 +55,9 @@ const secoes = [
   },
 ];
 
+const LARGURA_ABERTO = 240;
+const LARGURA_RECOLHIDO = 68;
+
 const iniciais = (nome = "") =>
   nome
     .split(" ")
@@ -59,8 +66,47 @@ const iniciais = (nome = "") =>
     .map((p) => p[0]!.toUpperCase())
     .join("");
 
+function LinkMenu({
+  item,
+  ativo,
+  recolhido,
+  onNavegar,
+}: {
+  item: ItemMenu;
+  ativo: boolean;
+  recolhido: boolean;
+  onNavegar: () => void;
+}) {
+  const { to, label, icon: Icone } = item;
+  const link = (
+    <UnstyledButton
+      component={Link}
+      to={to}
+      className="nav-item"
+      data-active={ativo || undefined}
+      data-collapsed={recolhido || undefined}
+      aria-current={ativo ? "page" : undefined}
+      aria-label={recolhido ? label : undefined}
+      onClick={onNavegar}
+    >
+      <Icone size={20} stroke={1.6} />
+      {!recolhido && <span>{label}</span>}
+    </UnstyledButton>
+  );
+  // Recolhido: o nome aparece num tooltip ao passar o mouse
+  return recolhido ? (
+    <Tooltip label={label} position="right" offset={14} openDelay={0}>
+      {link}
+    </Tooltip>
+  ) : (
+    link
+  );
+}
+
 export default function AppLayout() {
-  const [menuAberto, { toggle, close }] = useDisclosure();
+  const [menuMobile, { toggle: alternarMobile, close: fecharMobile }] = useDisclosure();
+  // Preferência lembrada entre visitas (localStorage)
+  const [recolhido, setRecolhido] = useLocalStorage({ key: "oficina.menuRecolhido", defaultValue: false });
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { setColorScheme } = useMantineColorScheme();
@@ -68,6 +114,9 @@ export default function AppLayout() {
 
   if (!estaAutenticado()) return <Navigate to="/login" replace />;
   const usuario = usuarioAtual();
+  // Trilha do cabeçalho: "Cadastros › Clientes"
+  const secaoAtual = secoes.find((s) => s.itens.some((i) => i.to === pathname));
+  const paginaAtual = secaoAtual?.itens.find((i) => i.to === pathname)?.label ?? "";
 
   function sair() {
     encerrarSessao();
@@ -77,54 +126,89 @@ export default function AppLayout() {
   return (
     <AppShell
       layout="alt"
-      header={{ height: 60 }}
-      navbar={{ width: 260, breakpoint: "sm", collapsed: { mobile: !menuAberto } }}
-      padding="lg"
+      header={{ height: 56 }}
+      navbar={{
+        width: { base: LARGURA_ABERTO, sm: recolhido ? LARGURA_RECOLHIDO : LARGURA_ABERTO },
+        breakpoint: "sm",
+        collapsed: { mobile: !menuMobile },
+      }}
+      padding={{ base: "md", md: "xl" }}
+      transitionDuration={180}
     >
-      <AppShell.Header>
-        <Group h="100%" px="lg" justify="space-between">
-          <Group gap="sm">
-            <Burger opened={menuAberto} onClick={toggle} hiddenFrom="sm" size="sm" aria-label="Abrir menu" />
-            <Text fw={600} c="dimmed" size="sm" visibleFrom="sm">
-              Sistema de gestão da oficina
-            </Text>
+      <AppShell.Header className="app-header">
+        <Group h="100%" px={{ base: "md", md: "xl" }} justify="space-between" wrap="nowrap">
+          <Group gap="sm" wrap="nowrap">
+            <Burger
+              opened={menuMobile}
+              onClick={alternarMobile}
+              hiddenFrom="sm"
+              size="sm"
+              aria-label="Abrir menu"
+            />
+            <Tooltip label={recolhido ? "Expandir menu" : "Recolher menu"}>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="lg"
+                visibleFrom="sm"
+                onClick={() => setRecolhido((r) => !r)}
+                aria-label={recolhido ? "Expandir menu lateral" : "Recolher menu lateral"}
+                aria-expanded={!recolhido}
+              >
+                {recolhido ? (
+                  <IconLayoutSidebarLeftExpand size={20} />
+                ) : (
+                  <IconLayoutSidebarLeftCollapse size={20} />
+                )}
+              </ActionIcon>
+            </Tooltip>
+            <Group gap={6} wrap="nowrap" component="nav" aria-label="Você está em">
+              <Text size="sm" c="dimmed" visibleFrom="xs">
+                {secaoAtual?.titulo}
+              </Text>
+              <IconChevronRight size={14} color="var(--mantine-color-dimmed)" className="trilha-seta" />
+              <Text size="sm" fw={600}>
+                {paginaAtual}
+              </Text>
+            </Group>
           </Group>
 
-          <Group gap="xs">
+          <Group gap={6} wrap="nowrap">
             <Tooltip label={esquema === "dark" ? "Tema claro" : "Tema escuro"}>
               <ActionIcon
-                variant="default"
+                variant="subtle"
+                color="gray"
                 size="lg"
                 aria-label="Alternar tema"
                 onClick={() => setColorScheme(esquema === "dark" ? "light" : "dark")}
               >
-                {esquema === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
+                {esquema === "dark" ? <IconSun size={19} /> : <IconMoon size={19} />}
               </ActionIcon>
             </Tooltip>
 
-            <Menu position="bottom-end" width={220} shadow="md">
+            <Menu position="bottom-end" width={230} shadow="md" radius="md">
               <Menu.Target>
-                <UnstyledButton aria-label="Menu do usuário">
-                  <Group gap={8}>
-                    <Avatar color="brand" radius="xl" size={34}>
+                <UnstyledButton aria-label="Menu do usuário" px={6} py={4} style={{ borderRadius: 4 }}>
+                  <Group gap={10} wrap="nowrap">
+                    <Avatar color="destaque" variant="filled" radius="sm" size={30} fz="xs">
                       {iniciais(usuario?.nome)}
                     </Avatar>
-                    <Box visibleFrom="sm">
-                      <Text size="sm" fw={600} lh={1.2}>
+                    <Box visibleFrom="sm" maw={180}>
+                      <Text size="sm" fw={600} lh={1.2} truncate>
                         {usuario?.nome}
                       </Text>
-                      <Text size="xs" c="dimmed" lh={1.2}>
+                      <Text size="xs" c="dimmed" lh={1.2} truncate>
                         {usuario?.email}
                       </Text>
                     </Box>
-                    <IconChevronDown size={14} />
+                    <IconChevronDown size={14} color="var(--mantine-color-dimmed)" />
                   </Group>
                 </UnstyledButton>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Label>Conta</Menu.Label>
+                <Menu.Label>{usuario?.email}</Menu.Label>
                 <Menu.Item color="red" leftSection={<IconLogout size={16} />} onClick={sair}>
-                  Sair
+                  Sair do sistema
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -133,23 +217,18 @@ export default function AppLayout() {
       </AppShell.Header>
 
       <AppShell.Navbar className="sidebar">
-        <Group className="sidebar-brand" px="md" h={60} gap="sm" wrap="nowrap" justify="space-between">
-          <Group gap="sm" wrap="nowrap">
-            <ThemeIcon size={34} radius="md" variant="gradient" gradient={{ from: "brand.5", to: "cyan.5" }}>
-              <IconTool size={20} />
-            </ThemeIcon>
-            <Box>
-              <Text fw={700} c="white" lh={1.1}>
-                AutoGestor
-              </Text>
-              <Text size="xs" c="#94a3b8" lh={1.1}>
-                Oficina mecânica
-              </Text>
-            </Box>
-          </Group>
+        <Group
+          className="sidebar-topo"
+          px={recolhido ? 0 : "md"}
+          justify={recolhido ? "center" : "space-between"}
+          wrap="nowrap"
+        >
+          <Link to="/" style={{ textDecoration: "none" }} aria-label="AutoGestor: ir para o painel">
+            <Marca compacta={recolhido} />
+          </Link>
           <Burger
-            opened={menuAberto}
-            onClick={toggle}
+            opened
+            onClick={fecharMobile}
             hiddenFrom="sm"
             size="sm"
             color="white"
@@ -157,35 +236,41 @@ export default function AppLayout() {
           />
         </Group>
 
-        <ScrollArea flex={1} px="sm">
-          {secoes.map((secao) => (
+        <ScrollArea flex={1} px={recolhido ? 8 : 12} scrollbarSize={6}>
+          {secoes.map((secao, i) => (
             <Box key={secao.titulo}>
-              <div className="sidebar-section">{secao.titulo}</div>
-              {secao.itens.map(({ to, label, icon: Icon }) => (
-                <NavLink
-                  key={to}
-                  component={Link}
-                  to={to}
-                  label={label}
-                  className="sidebar-link"
-                  leftSection={<Icon size={18} stroke={1.7} />}
-                  active={pathname === to}
-                  onClick={close}
+              {recolhido ? (
+                i > 0 && <div className="sidebar-divisor" />
+              ) : (
+                <div className="sidebar-secao">{secao.titulo}</div>
+              )}
+              {recolhido && i === 0 && <Box h={12} />}
+              {secao.itens.map((item) => (
+                <LinkMenu
+                  key={item.to}
+                  item={item}
+                  ativo={pathname === item.to}
+                  recolhido={recolhido}
+                  onNavegar={fecharMobile}
                 />
               ))}
             </Box>
           ))}
         </ScrollArea>
 
-        <Stack className="sidebar-footer" p="md" gap={2}>
-          <Text size="xs" c="#64748b">
-            v1.0.0 · Projeto acadêmico
-          </Text>
-        </Stack>
+        {!recolhido && (
+          <Box className="sidebar-rodape" px="md" py={12}>
+            <Text size="xs" c="var(--sidebar-texto-fraco)">
+              AutoGestor v1.0
+            </Text>
+          </Box>
+        )}
       </AppShell.Navbar>
 
       <AppShell.Main className="app-main">
-        <Outlet />
+        <Box maw={1360} mx="auto">
+          <Outlet />
+        </Box>
       </AppShell.Main>
     </AppShell>
   );
