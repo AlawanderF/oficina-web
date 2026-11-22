@@ -10,6 +10,17 @@
 - **Configuração:** as variáveis de ambiente são validadas na inicialização. Segredos ficam fora do Git (`.env` está no `.gitignore`).
 - **Automação:** o CodeQL roda em todo PR e uma vez por semana, e o Dependabot verifica as dependências toda semana.
 
+- **Robustez:** entradas inválidas nunca viram erro 500. Isso vale para ids fora do intervalo do banco, datas impossíveis, caracteres de controle, corpo grande demais e tipos errados. Há testes de regressão para cada caso em `api/tests/api.test.ts`.
+- **Tempo constante no login:** o bcrypt roda mesmo quando o e-mail não existe (com um hash falso), então o tempo de resposta não revela quais e-mails estão cadastrados.
+
+## Decisões de projeto (riscos aceitos)
+
+| Decisão                                                  | Motivo                                                          | Em produção, faríamos                                      |
+| -------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------- |
+| `POST /auth/cadastro` é público                          | O enunciado pede uma tela de cadastro de usuário antes do login | Cadastro só por um administrador, ou convite por e-mail    |
+| O token JWT não pode ser revogado antes de expirar (8 h) | Simplicidade: não há tabela de sessões                          | Token curto com _refresh token_, ou uma lista de revogação |
+| `JWT_SECRET` de exemplo público no `.env.example`        | Facilita rodar o projeto para a correção                        | Segredo forte e único, guardado num cofre de segredos      |
+
 ## Alertas conhecidos do `npm audit` (avaliados)
 
 | Pacote                | Alerta                                                                                                                                              | Por que não afeta este projeto                                                                                            | Ação                                                          |

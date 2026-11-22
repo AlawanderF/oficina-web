@@ -81,8 +81,10 @@ jobs:
       # Reproduz o passo a passo do README: .env a partir do exemplo, migrations e seed
       - name: Criar api/.env a partir do .env.example
         run: cp api/.env.example api/.env
-      - name: Migrations
-        run: npm run migrate:deploy -w api
+      # Mesmo comando do README (prisma migrate dev): falha se o schema.prisma
+      # tiver mudado sem a migration correspondente estar versionada.
+      - name: Migrations (como no README)
+        run: npm run migrate -w api
       - name: Seed
         run: npm run seed -w api
       - name: Testes do shared (schemas Zod)
