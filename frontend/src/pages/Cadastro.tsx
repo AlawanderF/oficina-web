@@ -1,50 +1,87 @@
-import { Alert, Anchor, Button, Card, Container, PasswordInput, Stack, TextInput, Title } from "@mantine/core";
-import { FormEvent, useState } from "react";
+import { Alert, Anchor, Button, PasswordInput, Stack, Text, TextInput } from "@mantine/core";
+import { IconAlertCircle } from "@tabler/icons-react";
+import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cadastroUsuarioSchema } from "shared";
+import AuthLayout from "../components/AuthLayout";
 import { authApi } from "../services/api";
-import { Erros, erroApi, zodErros } from "../services/erros";
+import { errosDaApi, errosDoZod, type ErrosCampos } from "../services/erros";
 
 export default function Cadastro() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ nome: "", email: "", senha: "" });
-  const [erros, setErros] = useState<Erros>({});
+  const [erros, setErros] = useState<ErrosCampos>({});
   const [aviso, setAviso] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
   async function cadastrar(e: FormEvent) {
     e.preventDefault();
     setAviso("");
+
     const resultado = cadastroUsuarioSchema.safeParse(form);
-    if (!resultado.success) return setErros(zodErros(resultado.error));
+    if (!resultado.success) {
+      setErros(errosDoZod(resultado.error));
+      return;
+    }
     setErros({});
+
+    setEnviando(true);
     try {
       await authApi.cadastrar(resultado.data);
-      navigate("/login");
-    } catch (err) {
-      const { message, campos } = erroApi(err);
+      navigate("/login?cadastrado=1", { replace: true });
+    } catch (erro) {
+      const { mensagem, campos } = errosDaApi(erro);
       setErros(campos);
-      setAviso(message);
+      setAviso(mensagem);
+    } finally {
+      setEnviando(false);
     }
   }
 
   return (
-    <Container size={420} my={80}>
-      <Title ta="center" mb="lg">Criar conta</Title>
-      <Card withBorder p="lg">
-        <form onSubmit={cadastrar}>
-          <Stack>
-            {aviso && <Alert color="red">{aviso}</Alert>}
-            <TextInput label="Nome" value={form.nome} error={erros.nome}
-              onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-            <TextInput label="E-mail" value={form.email} error={erros.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            <PasswordInput label="Senha" value={form.senha} error={erros.senha}
-              onChange={(e) => setForm({ ...form, senha: e.target.value })} />
-            <Button type="submit">Cadastrar</Button>
-            <Anchor component={Link} to="/login" size="sm" ta="center">Já tenho conta</Anchor>
-          </Stack>
-        </form>
-      </Card>
-    </Container>
+    <AuthLayout titulo="Criar conta" subtitulo="Cadastre-se para acessar o sistema.">
+      <form onSubmit={cadastrar} noValidate>
+        <Stack>
+          {aviso && (
+            <Alert color="red" variant="light" icon={<IconAlertCircle size={18} />}>
+              {aviso}
+            </Alert>
+          )}
+          <TextInput
+            label="Nome completo"
+            placeholder="Seu nome"
+            autoComplete="name"
+            value={form.nome}
+            error={erros.nome}
+            onChange={(e) => setForm({ ...form, nome: e.currentTarget.value })}
+          />
+          <TextInput
+            label="E-mail"
+            placeholder="voce@empresa.com"
+            autoComplete="email"
+            value={form.email}
+            error={erros.email}
+            onChange={(e) => setForm({ ...form, email: e.currentTarget.value })}
+          />
+          <PasswordInput
+            label="Senha"
+            description="Mínimo de 8 caracteres"
+            autoComplete="new-password"
+            value={form.senha}
+            error={erros.senha}
+            onChange={(e) => setForm({ ...form, senha: e.currentTarget.value })}
+          />
+          <Button type="submit" size="md" loading={enviando} fullWidth mt="xs">
+            Criar conta
+          </Button>
+          <Text size="sm" ta="center" c="dimmed">
+            Já tem conta?{" "}
+            <Anchor component={Link} to="/login" fw={600}>
+              Entrar
+            </Anchor>
+          </Text>
+        </Stack>
+      </form>
+    </AuthLayout>
   );
 }

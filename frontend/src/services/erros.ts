@@ -1,27 +1,27 @@
 import { isAxiosError } from "axios";
+import type { ZodError } from "zod";
 
-export type Erros = Record<string, string>;
+/** Mapa campo -> mensagem, usado nos formulários. A chave "geral" é o aviso do topo. */
+export type ErrosCampos = Record<string, string>;
 
-interface ZodLike {
-  issues: { path: (string | number)[]; message: string }[];
-}
-
-// Converte erro do Zod (validação no navegador) em { campo: mensagem }
-export function zodErros(error: ZodLike): Erros {
-  const erros: Erros = {};
-  for (const issue of error.issues) {
+/** Converte o erro do Zod (validação no navegador) em { campo: mensagem }. */
+export function errosDoZod(erro: ZodError): ErrosCampos {
+  const erros: ErrosCampos = {};
+  for (const issue of erro.issues) {
     const campo = issue.path.join(".");
-    if (!erros[campo]) erros[campo] = issue.message;
+    erros[campo] ??= issue.message;
   }
   return erros;
 }
 
-// Lê a resposta de erro da API: mensagem geral + mensagem por campo
-export function erroApi(err: unknown): { message: string; campos: Erros } {
-  if (isAxiosError(err)) {
-    if (!err.response) return { message: "Não foi possível conectar à API", campos: {} };
-    const data = err.response.data as { message?: string; erros?: Erros };
-    return { message: data?.message ?? "Erro inesperado", campos: data?.erros ?? {} };
+/** Lê a resposta de erro da API: { message, erros: { campo: mensagem } }. */
+export function errosDaApi(erro: unknown): { mensagem: string; campos: ErrosCampos } {
+  if (isAxiosError(erro)) {
+    if (!erro.response) {
+      return { mensagem: "Não foi possível conectar à API. Verifique se ela está rodando.", campos: {} };
+    }
+    const dados = erro.response.data as { message?: string; erros?: ErrosCampos } | undefined;
+    return { mensagem: dados?.message ?? "Erro inesperado", campos: dados?.erros ?? {} };
   }
-  return { message: "Erro inesperado", campos: {} };
+  return { mensagem: "Erro inesperado", campos: {} };
 }

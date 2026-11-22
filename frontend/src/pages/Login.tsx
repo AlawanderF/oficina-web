@@ -1,52 +1,96 @@
-import { Alert, Anchor, Button, Card, Container, PasswordInput, Stack, TextInput, Title } from "@mantine/core";
-import { FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Alert, Anchor, Button, PasswordInput, Stack, Text, TextInput } from "@mantine/core";
+import { IconAlertCircle, IconInfoCircle } from "@tabler/icons-react";
+import { type FormEvent, useState } from "react";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { loginSchema } from "shared";
+import AuthLayout from "../components/AuthLayout";
 import { authApi } from "../services/api";
-import { salvarSessao } from "../services/auth";
-import { Erros, erroApi, zodErros } from "../services/erros";
+import { errosDaApi, errosDoZod, type ErrosCampos } from "../services/erros";
+import { estaAutenticado, salvarSessao } from "../services/sessao";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [form, setForm] = useState({ email: "", senha: "" });
-  const [erros, setErros] = useState<Erros>({});
+  const [erros, setErros] = useState<ErrosCampos>({});
   const [aviso, setAviso] = useState("");
+  const [enviando, setEnviando] = useState(false);
+
+  if (estaAutenticado()) return <Navigate to="/" replace />;
 
   async function entrar(e: FormEvent) {
     e.preventDefault();
     setAviso("");
-    // 1) valida no navegador com o MESMO schema que a API usa
+
+    // 1) Valida no navegador com o MESMO schema que a API usa no validarBody
     const resultado = loginSchema.safeParse(form);
-    if (!resultado.success) return setErros(zodErros(resultado.error));
+    if (!resultado.success) {
+      setErros(errosDoZod(resultado.error));
+      return;
+    }
     setErros({});
-    // 2) chama a API
+
+    // 2) Envia para a API; em caso de sucesso guarda o token e entra
+    setEnviando(true);
     try {
       const { token, usuario } = await authApi.login(resultado.data);
       salvarSessao(token, usuario);
-      navigate("/");
-    } catch (err) {
-      const { message, campos } = erroApi(err);
+      navigate("/", { replace: true });
+    } catch (erro) {
+      const { mensagem, campos } = errosDaApi(erro);
       setErros(campos);
-      setAviso(message);
+      setAviso(mensagem);
+    } finally {
+      setEnviando(false);
     }
   }
 
   return (
-    <Container size={420} my={80}>
-      <Title ta="center" mb="lg">📚 Biblioteca</Title>
-      <Card withBorder p="lg">
-        <form onSubmit={entrar}>
-          <Stack>
-            {aviso && <Alert color="red">{aviso}</Alert>}
-            <TextInput label="E-mail" value={form.email} error={erros.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            <PasswordInput label="Senha" value={form.senha} error={erros.senha}
-              onChange={(e) => setForm({ ...form, senha: e.target.value })} />
-            <Button type="submit">Entrar</Button>
-            <Anchor component={Link} to="/cadastro" size="sm" ta="center">Criar conta</Anchor>
-          </Stack>
-        </form>
-      </Card>
-    </Container>
+    <AuthLayout titulo="Entrar" subtitulo="Acesse o painel de gestão da oficina.">
+      <form onSubmit={entrar} noValidate>
+        <Stack>
+          {params.get("cadastrado") && (
+            <Alert color="teal" variant="light" icon={<IconInfoCircle size={18} />}>
+              Conta criada com sucesso. Faça login para continuar.
+            </Alert>
+          )}
+          {params.get("expirada") && !aviso && (
+            <Alert color="yellow" variant="light" icon={<IconInfoCircle size={18} />}>
+              Sua sessão expirou. Entre novamente.
+            </Alert>
+          )}
+          {aviso && (
+            <Alert color="red" variant="light" icon={<IconAlertCircle size={18} />}>
+              {aviso}
+            </Alert>
+          )}
+          <TextInput
+            label="E-mail"
+            placeholder="voce@empresa.com"
+            autoComplete="email"
+            value={form.email}
+            error={erros.email}
+            onChange={(e) => setForm({ ...form, email: e.currentTarget.value })}
+          />
+          <PasswordInput
+            label="Senha"
+            placeholder="Sua senha"
+            autoComplete="current-password"
+            value={form.senha}
+            error={erros.senha}
+            onChange={(e) => setForm({ ...form, senha: e.currentTarget.value })}
+          />
+          <Button type="submit" size="md" loading={enviando} fullWidth mt="xs">
+            Entrar
+          </Button>
+          <Text size="sm" ta="center" c="dimmed">
+            Não tem conta?{" "}
+            <Anchor component={Link} to="/cadastro" fw={600}>
+              Criar conta
+            </Anchor>
+          </Text>
+        </Stack>
+      </form>
+    </AuthLayout>
   );
 }

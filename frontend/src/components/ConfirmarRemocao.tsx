@@ -1,19 +1,35 @@
-import { Button, Group, Modal, Text } from "@mantine/core";
+import { Button, Group, Modal, Stack, Text, ThemeIcon } from "@mantine/core";
+import { IconTrash } from "@tabler/icons-react";
 
 interface Props {
   aberto: boolean;
-  texto: string;
+  descricao: string;
+  carregando: boolean;
   onConfirmar: () => void;
   onCancelar: () => void;
 }
 
-export default function ConfirmarRemocao({ aberto, texto, onConfirmar, onCancelar }: Props) {
+export default function ConfirmarRemocao({ aberto, descricao, carregando, onConfirmar, onCancelar }: Props) {
   return (
-    <Modal opened={aberto} onClose={onCancelar} title="Confirmar remoção" centered>
-      <Text mb="md">Tem certeza que deseja remover {texto}?</Text>
-      <Group justify="flex-end">
-        <Button variant="default" onClick={onCancelar}>Cancelar</Button>
-        <Button color="red" onClick={onConfirmar}>Remover</Button>
+    <Modal opened={aberto} onClose={onCancelar} withCloseButton={false} size="sm">
+      <Stack align="center" gap="sm" ta="center" pt="sm">
+        <ThemeIcon size={52} radius="xl" color="red" variant="light">
+          <IconTrash size={26} />
+        </ThemeIcon>
+        <Text fw={650} fz="lg">
+          Confirmar exclusão
+        </Text>
+        <Text size="sm" c="dimmed">
+          Deseja remover <b>{descricao}</b>? Esta ação não pode ser desfeita.
+        </Text>
+      </Stack>
+      <Group grow mt="lg">
+        <Button variant="default" onClick={onCancelar} disabled={carregando}>
+          Cancelar
+        </Button>
+        <Button color="red" onClick={onConfirmar} loading={carregando}>
+          Remover
+        </Button>
       </Group>
     </Modal>
   );
