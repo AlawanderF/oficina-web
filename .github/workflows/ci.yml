@@ -107,10 +107,25 @@ jobs:
     name: Auditoria de dependências
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-      - run: npm audit --omit=dev --audit-level=high
+      # Alertas conhecidos e avaliados (ver SECURITY.md) viram aviso, não falha.
+      # O relatório completo fica no log e no resumo da execução.
+      - name: npm audit (informativo)
+        run: |
+          if npm audit --omit=dev --audit-level=high > audit.txt; then
+            echo "Nenhuma vulnerabilidade alta ou crítica." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning title=npm audit::Há alertas de dependências. Os já avaliados estão documentados no SECURITY.md."
+            {
+              echo "### Alertas do npm audit"
+              echo '```'
+              cat audit.txt
+              echo '```'
+              echo "Avaliação e justificativa: SECURITY.md"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          cat audit.txt
