@@ -1,15 +1,18 @@
 import { Router } from "express";
 import { autenticar } from "../middlewares/auth";
 import { authRoutes } from "./authRoutes";
-import { autorRoutes } from "./autorRoutes";
-import { emprestimoRoutes } from "./emprestimoRoutes";
-import { leitorRoutes } from "./leitorRoutes";
-import { livroRoutes } from "./livroRoutes";
+import { clienteRoutes } from "./clienteRoutes";
+import { mecanicoRoutes } from "./mecanicoRoutes";
+import { ordemServicoRoutes } from "./ordemServicoRoutes";
+import { veiculoRoutes } from "./veiculoRoutes";
 
 export const routes = Router();
 
-routes.use("/auth", authRoutes); // público: cadastro e login
-routes.use("/autores", autenticar, autorRoutes); // demais rotas exigem token
-routes.use("/livros", autenticar, livroRoutes);
-routes.use("/leitores", autenticar, leitorRoutes);
-routes.use("/emprestimos", autenticar, emprestimoRoutes);
+// Públicas
+routes.use("/auth", authRoutes);
+
+// Protegidas por JWT
+routes.use("/clientes", autenticar, clienteRoutes);
+routes.use("/veiculos", autenticar, veiculoRoutes);
+routes.use("/mecanicos", autenticar, mecanicoRoutes);
+routes.use("/ordens-servico", autenticar, ordemServicoRoutes);

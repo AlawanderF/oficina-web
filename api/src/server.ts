@@ -1,20 +1,18 @@
-import "dotenv/config";
-import cors from "cors";
-import express from "express";
-import swaggerUi from "swagger-ui-express";
-import { tratarErros } from "./middlewares/erros";
-import { routes } from "./routes";
-import { swaggerSpec } from "./swagger";
+import { app } from "./app";
+import { config } from "./config";
+import { prisma } from "./lib/prisma";
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use(routes);
-app.use(tratarErros); // sempre por último
-
-const port = Number(process.env.PORT) || 3333;
-app.listen(port, () => {
-  console.log(`API em http://localhost:${port}  |  Swagger em http://localhost:${port}/docs`);
+const server = app.listen(config.PORT, () => {
+  console.log(`🚗 API Oficina em http://localhost:${config.PORT}`);
+  console.log(`📚 Swagger em      http://localhost:${config.PORT}/docs`);
 });
+
+// Encerramento gracioso: fecha conexões HTTP e com o banco
+for (const sinal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(sinal, () => {
+    server.close(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    });
+  });
+}

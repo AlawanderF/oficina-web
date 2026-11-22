@@ -7,46 +7,78 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Usuário do sistema (login) — não conta nas 4 tabelas do tema
+/// Usuário do sistema (login). Não conta entre as 4 tabelas do domínio.
 model Usuario {
-  id    Int    @id @default(autoincrement())
-  nome  String
-  email String @unique
-  senha String // hash bcrypt, nunca a senha digitada
+  id       Int      @id @default(autoincrement())
+  nome     String
+  email    String   @unique
+  senha    String /// hash bcrypt — a senha digitada nunca é armazenada
+  criadoEm DateTime @default(now())
+
+  @@map("usuarios")
 }
 
-model Autor {
-  id            Int     @id @default(autoincrement())
+model Cliente {
+  id        Int       @id @default(autoincrement())
+  nome      String
+  cpf       String    @unique
+  telefone  String
+  email     String
+  criadoEm  DateTime  @default(now())
+  veiculos  Veiculo[]
+
+  @@map("clientes")
+}
+
+/// Veículo -> Cliente (clienteId)
+model Veiculo {
+  id        Int            @id @default(autoincrement())
+  placa     String         @unique
+  marca     String
+  modelo    String
+  ano       Int
+  clienteId Int
+  cliente   Cliente        @relation(fields: [clienteId], references: [id])
+  ordens    OrdemServico[]
+  criadoEm  DateTime       @default(now())
+
+  @@index([clienteId])
+  @@map("veiculos")
+}
+
+model Mecanico {
+  id            Int            @id @default(autoincrement())
   nome          String
-  nacionalidade String
-  livros        Livro[]
+  especialidade String
+  telefone      String
+  ordens        OrdemServico[]
+  criadoEm      DateTime       @default(now())
+
+  @@map("mecanicos")
 }
 
-model Livro {
-  id            Int          @id @default(autoincrement())
-  titulo        String
-  isbn          String       @unique
-  anoPublicacao Int
-  autorId       Int
-  autor         Autor        @relation(fields: [autorId], references: [id])
-  emprestimos   Emprestimo[]
+enum StatusOrdem {
+  ABERTA
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
 }
 
-model Leitor {
-  id          Int          @id @default(autoincrement())
-  nome        String
-  email       String       @unique
-  cpf         String       @unique
-  emprestimos Emprestimo[]
-}
+/// Ordem de serviço -> Veículo (veiculoId) e Mecânico (mecanicoId): ligada a duas tabelas
+model OrdemServico {
+  id            Int         @id @default(autoincrement())
+  descricao     String
+  status        StatusOrdem @default(ABERTA)
+  valor         Decimal     @db.Decimal(10, 2)
+  dataAbertura  DateTime    @db.Date
+  dataConclusao DateTime?   @db.Date
+  veiculoId     Int
+  mecanicoId    Int
+  veiculo       Veiculo     @relation(fields: [veiculoId], references: [id])
+  mecanico      Mecanico    @relation(fields: [mecanicoId], references: [id])
+  criadoEm      DateTime    @default(now())
 
-// Ligada a duas outras tabelas: Livro e Leitor
-model Emprestimo {
-  id             Int       @id @default(autoincrement())
-  livroId        Int
-  leitorId       Int
-  dataEmprestimo DateTime
-  dataDevolucao  DateTime?
-  livro          Livro     @relation(fields: [livroId], references: [id])
-  leitor         Leitor    @relation(fields: [leitorId], references: [id])
+  @@index([veiculoId])
+  @@index([mecanicoId])
+  @@map("ordens_servico")
 }

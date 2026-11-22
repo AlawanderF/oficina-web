@@ -1,1554 +1,1658 @@
-// Documentação OpenAPI exibida em /docs
+/* Documentação OpenAPI 3 exibida em /docs */
 export const swaggerSpec = {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "API Biblioteca",
-    "version": "1.0.0",
-    "description": "Faça login em POST /auth/login, copie o token e clique em Authorize."
+  openapi: "3.0.3",
+  info: {
+    title: "API Oficina Mecânica",
+    version: "1.0.0",
+    description:
+      "Como usar: execute **POST /auth/login** com o usuário do seed, copie o `token` e clique em **Authorize**.",
   },
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
+  tags: [
+    {
+      name: "Autenticação",
     },
-    "schemas": {
-      "Erro": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          },
-          "erros": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
-        }
+    {
+      name: "Clientes",
+    },
+    {
+      name: "Veículos",
+    },
+    {
+      name: "Mecânicos",
+    },
+    {
+      name: "Ordens de serviço",
+    },
+  ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
       },
-      "CadastroUsuario": {
-        "type": "object",
-        "required": [
-          "nome",
-          "email",
-          "senha"
-        ],
-        "properties": {
-          "nome": {
-            "type": "string",
-            "example": "Maria Silva"
+    },
+    schemas: {
+      Erro: {
+        type: "object",
+        properties: {
+          message: {
+            type: "string",
+            example: "Registro não encontrado",
           },
-          "email": {
-            "type": "string",
-            "example": "maria@email.com"
-          },
-          "senha": {
-            "type": "string",
-            "minLength": 6,
-            "example": "123456"
-          }
-        }
-      },
-      "Login": {
-        "type": "object",
-        "required": [
-          "email",
-          "senha"
-        ],
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "professor@biblioteca.com"
-          },
-          "senha": {
-            "type": "string",
-            "example": "senha123"
-          }
-        }
-      },
-      "Usuario": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "nome": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          }
-        }
-      },
-      "AutorEntrada": {
-        "type": "object",
-        "required": [
-          "nome",
-          "nacionalidade"
-        ],
-        "properties": {
-          "nome": {
-            "type": "string",
-            "example": "Jorge Amado"
-          },
-          "nacionalidade": {
-            "type": "string",
-            "example": "Brasileira"
-          }
-        }
-      },
-      "Autor": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "nome": {
-            "type": "string"
-          },
-          "nacionalidade": {
-            "type": "string"
-          }
-        }
-      },
-      "LivroEntrada": {
-        "type": "object",
-        "required": [
-          "titulo",
-          "isbn",
-          "anoPublicacao",
-          "autorId"
-        ],
-        "properties": {
-          "titulo": {
-            "type": "string",
-            "example": "Capitães da Areia"
-          },
-          "isbn": {
-            "type": "string",
-            "description": "13 dígitos",
-            "example": "9788535914000"
-          },
-          "anoPublicacao": {
-            "type": "integer",
-            "example": 1937
-          },
-          "autorId": {
-            "type": "integer",
-            "example": 1
-          }
-        }
-      },
-      "Livro": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "titulo": {
-            "type": "string"
-          },
-          "isbn": {
-            "type": "string"
-          },
-          "anoPublicacao": {
-            "type": "integer"
-          },
-          "autorId": {
-            "type": "integer"
-          },
-          "autor": {
-            "$ref": "#/components/schemas/Autor"
-          }
-        }
-      },
-      "LeitorEntrada": {
-        "type": "object",
-        "required": [
-          "nome",
-          "email",
-          "cpf"
-        ],
-        "properties": {
-          "nome": {
-            "type": "string",
-            "example": "Diego Rocha"
-          },
-          "email": {
-            "type": "string",
-            "example": "diego@email.com"
-          },
-          "cpf": {
-            "type": "string",
-            "description": "11 dígitos",
-            "example": "44444444444"
-          }
-        }
-      },
-      "Leitor": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "nome": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "cpf": {
-            "type": "string"
-          }
-        }
-      },
-      "EmprestimoEntrada": {
-        "type": "object",
-        "required": [
-          "livroId",
-          "leitorId",
-          "dataEmprestimo"
-        ],
-        "properties": {
-          "livroId": {
-            "type": "integer",
-            "example": 1
-          },
-          "leitorId": {
-            "type": "integer",
-            "example": 1
-          },
-          "dataEmprestimo": {
-            "type": "string",
-            "example": "2026-11-20"
-          },
-          "dataDevolucao": {
-            "type": "string",
-            "nullable": true,
-            "example": null
-          }
-        }
-      },
-      "Emprestimo": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "livroId": {
-            "type": "integer"
-          },
-          "leitorId": {
-            "type": "integer"
-          },
-          "dataEmprestimo": {
-            "type": "string"
-          },
-          "dataDevolucao": {
-            "type": "string",
-            "nullable": true
-          },
-          "livro": {
-            "$ref": "#/components/schemas/Livro"
-          },
-          "leitor": {
-            "$ref": "#/components/schemas/Leitor"
-          }
-        }
-      }
-    }
-  },
-  "paths": {
-    "/auth/cadastro": {
-      "post": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Cadastra usuário (senha vira hash bcrypt)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CadastroUsuario"
-              }
-            }
-          }
         },
-        "responses": {
+      },
+      ErroValidacao: {
+        type: "object",
+        properties: {
+          message: {
+            type: "string",
+            example: "Dados inválidos",
+          },
+          erros: {
+            type: "object",
+            additionalProperties: {
+              type: "string",
+            },
+            example: {
+              cpf: "CPF inválido",
+              email: "E-mail inválido",
+            },
+          },
+        },
+      },
+      CadastroUsuario: {
+        type: "object",
+        required: ["nome", "email", "senha"],
+        properties: {
+          nome: {
+            type: "string",
+            example: "Maria Silva",
+          },
+          email: {
+            type: "string",
+            format: "email",
+            example: "maria@oficina.com",
+          },
+          senha: {
+            type: "string",
+            minLength: 8,
+            example: "minhaSenha123",
+          },
+        },
+      },
+      Login: {
+        type: "object",
+        required: ["email", "senha"],
+        properties: {
+          email: {
+            type: "string",
+            example: "professor@oficina.com",
+          },
+          senha: {
+            type: "string",
+            example: "senha1234",
+          },
+        },
+      },
+      Usuario: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+          },
+          nome: {
+            type: "string",
+          },
+          email: {
+            type: "string",
+          },
+          criadoEm: {
+            type: "string",
+            format: "date-time",
+          },
+        },
+      },
+      ClienteEntrada: {
+        type: "object",
+        required: ["nome", "cpf", "telefone", "email"],
+        properties: {
+          nome: {
+            type: "string",
+            example: "João da Silva",
+          },
+          cpf: {
+            type: "string",
+            description: "11 dígitos, com ou sem máscara. Precisa ser um CPF válido.",
+            example: "246.813.579-28",
+          },
+          telefone: {
+            type: "string",
+            description: "DDD + número",
+            example: "(11) 91234-5678",
+          },
+          email: {
+            type: "string",
+            format: "email",
+            example: "joao@email.com",
+          },
+        },
+      },
+      Cliente: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+          },
+          nome: {
+            type: "string",
+          },
+          cpf: {
+            type: "string",
+          },
+          telefone: {
+            type: "string",
+          },
+          email: {
+            type: "string",
+          },
+          criadoEm: {
+            type: "string",
+            format: "date-time",
+          },
+        },
+      },
+      VeiculoEntrada: {
+        type: "object",
+        required: ["placa", "marca", "modelo", "ano", "clienteId"],
+        properties: {
+          placa: {
+            type: "string",
+            description: "Antiga (ABC1234) ou Mercosul (ABC1D23)",
+            example: "RIO2A18",
+          },
+          marca: {
+            type: "string",
+            example: "Renault",
+          },
+          modelo: {
+            type: "string",
+            example: "Sandero",
+          },
+          ano: {
+            type: "integer",
+            example: 2020,
+          },
+          clienteId: {
+            type: "integer",
+            example: 1,
+          },
+        },
+      },
+      Veiculo: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+          },
+          placa: {
+            type: "string",
+          },
+          marca: {
+            type: "string",
+          },
+          modelo: {
+            type: "string",
+          },
+          ano: {
+            type: "integer",
+          },
+          clienteId: {
+            type: "integer",
+          },
+          cliente: {
+            $ref: "#/components/schemas/Cliente",
+          },
+          criadoEm: {
+            type: "string",
+            format: "date-time",
+          },
+        },
+      },
+      MecanicoEntrada: {
+        type: "object",
+        required: ["nome", "especialidade", "telefone"],
+        properties: {
+          nome: {
+            type: "string",
+            example: "Paulo Ribeiro",
+          },
+          especialidade: {
+            type: "string",
+            example: "Câmbio automático",
+          },
+          telefone: {
+            type: "string",
+            example: "11988887777",
+          },
+        },
+      },
+      Mecanico: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+          },
+          nome: {
+            type: "string",
+          },
+          especialidade: {
+            type: "string",
+          },
+          telefone: {
+            type: "string",
+          },
+          criadoEm: {
+            type: "string",
+            format: "date-time",
+          },
+        },
+      },
+      OrdemServicoEntrada: {
+        type: "object",
+        required: ["veiculoId", "mecanicoId", "descricao", "status", "valor", "dataAbertura"],
+        description: "Se status = CONCLUIDA, dataConclusao é obrigatória e não pode ser anterior à abertura.",
+        properties: {
+          veiculoId: {
+            type: "integer",
+            example: 1,
+          },
+          mecanicoId: {
+            type: "integer",
+            example: 1,
+          },
+          descricao: {
+            type: "string",
+            example: "Troca de embreagem",
+          },
+          status: {
+            type: "string",
+            enum: ["ABERTA", "EM_ANDAMENTO", "CONCLUIDA", "CANCELADA"],
+            example: "ABERTA",
+          },
+          valor: {
+            type: "number",
+            example: 1450,
+          },
+          dataAbertura: {
+            type: "string",
+            format: "date",
+            example: "2026-11-22",
+          },
+          dataConclusao: {
+            type: "string",
+            format: "date",
+            nullable: true,
+            example: null,
+          },
+        },
+      },
+      OrdemServico: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+          },
+          descricao: {
+            type: "string",
+          },
+          status: {
+            type: "string",
+            enum: ["ABERTA", "EM_ANDAMENTO", "CONCLUIDA", "CANCELADA"],
+          },
+          valor: {
+            type: "string",
+            description: "Decimal serializado como texto",
+            example: "1450.00",
+          },
+          dataAbertura: {
+            type: "string",
+            format: "date-time",
+          },
+          dataConclusao: {
+            type: "string",
+            format: "date-time",
+            nullable: true,
+          },
+          veiculoId: {
+            type: "integer",
+          },
+          mecanicoId: {
+            type: "integer",
+          },
+          veiculo: {
+            $ref: "#/components/schemas/Veiculo",
+          },
+          mecanico: {
+            $ref: "#/components/schemas/Mecanico",
+          },
+          criadoEm: {
+            type: "string",
+            format: "date-time",
+          },
+        },
+      },
+    },
+  },
+  paths: {
+    "/auth/cadastro": {
+      post: {
+        tags: ["Autenticação"],
+        summary: "Cadastra um usuário",
+        description: "A senha é armazenada como hash bcrypt e nunca é devolvida.",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CadastroUsuario",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Criado (sem senha)",
-            "content": {
+            description: "Usuário criado (sem a senha)",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Usuario"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Usuario",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/auth/login": {
-      "post": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Login: devolve o token JWT",
-        "requestBody": {
-          "required": true,
-          "content": {
+      post: {
+        tags: ["Autenticação"],
+        summary: "Autentica e devolve o token JWT",
+        requestBody: {
+          required: true,
+          content: {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Login"
-              }
-            }
-          }
+              schema: {
+                $ref: "#/components/schemas/Login",
+              },
+            },
+          },
         },
-        "responses": {
+        responses: {
           "200": {
-            "description": "Token e usuário (sem senha)",
-            "content": {
+            description: "Token JWT (8h) e usuário sem senha",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "token": {
-                      "type": "string"
+                schema: {
+                  type: "object",
+                  properties: {
+                    token: {
+                      type: "string",
                     },
-                    "usuario": {
-                      "$ref": "#/components/schemas/Usuario"
-                    }
-                  }
-                }
-              }
-            }
+                    usuario: {
+                      $ref: "#/components/schemas/Usuario",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "E-mail ou senha inválidos",
-            "content": {
+            description: "E-mail ou senha inválidos",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/autores": {
-      "get": {
-        "tags": [
-          "Autor"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Lista autores",
-        "responses": {
-          "200": {
-            "description": "Lista",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Autor"
-                  }
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
-          "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Autor"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Cria (Autor)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AutorEntrada"
-              }
-            }
-          }
         },
-        "responses": {
+      },
+    },
+    "/clientes": {
+      get: {
+        tags: ["Clientes"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Lista clientes",
+        responses: {
+          "200": {
+            description: "Lista",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/Cliente",
+                  },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["Clientes"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Cria cliente",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ClienteEntrada",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Criado",
-            "content": {
+            description: "Criado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Autor"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Cliente",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/autores/{id}": {
-      "get": {
-        "tags": [
-          "Autor"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Busca por id (Autor)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Autor"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
-          "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Id não encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Autor"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Edita (Autor)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AutorEntrada"
-              }
-            }
-          }
         },
-        "responses": {
+      },
+    },
+    "/clientes/{id}": {
+      get: {
+        tags: ["Clientes"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Busca cliente por id",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
+        ],
+        responses: {
           "200": {
-            "description": "Atualizado",
-            "content": {
+            description: "Encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Autor"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Cliente",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Id não encontrado",
-            "content": {
+            description: "Registro não encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ["Clientes"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Edita cliente",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ClienteEntrada",
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Atualizado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Cliente",
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+          "404": {
+            description: "Registro não encontrado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+        },
       },
-      "delete": {
-        "tags": [
-          "Autor"
-        ],
-        "security": [
+      delete: {
+        tags: ["Clientes"],
+        security: [
           {
-            "bearerAuth": []
-          }
+            bearerAuth: [],
+          },
         ],
-        "summary": "Remove (Autor)",
-        "parameters": [
+        summary: "Remove cliente",
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
         ],
-        "responses": {
+        responses: {
           "204": {
-            "description": "Removido"
+            description: "Removido",
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Id não encontrado",
-            "content": {
+            description: "Registro não encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Registro em uso por outro",
-            "content": {
+            description: "Registro em uso por outro",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    "/livros": {
-      "get": {
-        "tags": [
-          "Livro"
-        ],
-        "security": [
+    "/veiculos": {
+      get: {
+        tags: ["Veículos"],
+        security: [
           {
-            "bearerAuth": []
-          }
+            bearerAuth: [],
+          },
         ],
-        "summary": "Lista livros",
-        "responses": {
+        summary: "Lista veículos",
+        responses: {
           "200": {
-            "description": "Lista",
-            "content": {
+            description: "Lista",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Livro"
-                  }
-                }
-              }
-            }
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/Veiculo",
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Livro"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Cria (Livro)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LivroEntrada"
-              }
-            }
-          }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
         },
-        "responses": {
+      },
+      post: {
+        tags: ["Veículos"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Cria veículo",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/VeiculoEntrada",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Criado",
-            "content": {
+            description: "Criado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Livro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Veiculo",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/livros/{id}": {
-      "get": {
-        "tags": [
-          "Livro"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Busca por id (Livro)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Livro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
-          "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Id não encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Livro"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Edita (Livro)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LivroEntrada"
-              }
-            }
-          }
         },
-        "responses": {
+      },
+    },
+    "/veiculos/{id}": {
+      get: {
+        tags: ["Veículos"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Busca veículo por id",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
+        ],
+        responses: {
           "200": {
-            "description": "Atualizado",
-            "content": {
+            description: "Encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Livro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Veiculo",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Id não encontrado",
-            "content": {
+            description: "Registro não encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ["Veículos"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Edita veículo",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/VeiculoEntrada",
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Atualizado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Veiculo",
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+          "404": {
+            description: "Registro não encontrado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+        },
       },
-      "delete": {
-        "tags": [
-          "Livro"
-        ],
-        "security": [
+      delete: {
+        tags: ["Veículos"],
+        security: [
           {
-            "bearerAuth": []
-          }
+            bearerAuth: [],
+          },
         ],
-        "summary": "Remove (Livro)",
-        "parameters": [
+        summary: "Remove veículo",
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
         ],
-        "responses": {
+        responses: {
           "204": {
-            "description": "Removido"
+            description: "Removido",
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Id não encontrado",
-            "content": {
+            description: "Registro não encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Registro em uso por outro",
-            "content": {
+            description: "Registro em uso por outro",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    "/leitores": {
-      "get": {
-        "tags": [
-          "Leitor"
-        ],
-        "security": [
+    "/mecanicos": {
+      get: {
+        tags: ["Mecânicos"],
+        security: [
           {
-            "bearerAuth": []
-          }
+            bearerAuth: [],
+          },
         ],
-        "summary": "Lista leitores",
-        "responses": {
+        summary: "Lista mecânicos",
+        responses: {
           "200": {
-            "description": "Lista",
-            "content": {
+            description: "Lista",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Leitor"
-                  }
-                }
-              }
-            }
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/Mecanico",
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Leitor"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Cria (Leitor)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LeitorEntrada"
-              }
-            }
-          }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
         },
-        "responses": {
+      },
+      post: {
+        tags: ["Mecânicos"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Cria mecânico",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/MecanicoEntrada",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Criado",
-            "content": {
+            description: "Criado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Leitor"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Mecanico",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/leitores/{id}": {
-      "get": {
-        "tags": [
-          "Leitor"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Busca por id (Leitor)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Leitor"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
-          "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Id não encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Leitor"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Edita (Leitor)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LeitorEntrada"
-              }
-            }
-          }
         },
-        "responses": {
+      },
+    },
+    "/mecanicos/{id}": {
+      get: {
+        tags: ["Mecânicos"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Busca mecânico por id",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
+        ],
+        responses: {
           "200": {
-            "description": "Atualizado",
-            "content": {
+            description: "Encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Leitor"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Mecanico",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Id não encontrado",
-            "content": {
+            description: "Registro não encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ["Mecânicos"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Edita mecânico",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/MecanicoEntrada",
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Atualizado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Mecanico",
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+          "404": {
+            description: "Registro não encontrado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+        },
       },
-      "delete": {
-        "tags": [
-          "Leitor"
-        ],
-        "security": [
+      delete: {
+        tags: ["Mecânicos"],
+        security: [
           {
-            "bearerAuth": []
-          }
+            bearerAuth: [],
+          },
         ],
-        "summary": "Remove (Leitor)",
-        "parameters": [
+        summary: "Remove mecânico",
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
         ],
-        "responses": {
+        responses: {
           "204": {
-            "description": "Removido"
+            description: "Removido",
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Id não encontrado",
-            "content": {
+            description: "Registro não encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Registro em uso por outro",
-            "content": {
+            description: "Registro em uso por outro",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    "/emprestimos": {
-      "get": {
-        "tags": [
-          "Emprestimo"
-        ],
-        "security": [
+    "/ordens-servico": {
+      get: {
+        tags: ["Ordens de serviço"],
+        security: [
           {
-            "bearerAuth": []
-          }
+            bearerAuth: [],
+          },
         ],
-        "summary": "Lista emprestimos",
-        "responses": {
+        summary: "Lista ordens de serviço",
+        responses: {
           "200": {
-            "description": "Lista",
-            "content": {
+            description: "Lista",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Emprestimo"
-                  }
-                }
-              }
-            }
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/OrdemServico",
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Emprestimo"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Cria (Emprestimo)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EmprestimoEntrada"
-              }
-            }
-          }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
         },
-        "responses": {
+      },
+      post: {
+        tags: ["Ordens de serviço"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Cria ordem de serviço",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/OrdemServicoEntrada",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Criado",
-            "content": {
+            description: "Criado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Emprestimo"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/OrdemServico",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/emprestimos/{id}": {
-      "get": {
-        "tags": [
-          "Emprestimo"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Busca por id (Emprestimo)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Emprestimo"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
-          "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Id não encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Emprestimo"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Edita (Emprestimo)",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EmprestimoEntrada"
-              }
-            }
-          }
         },
-        "responses": {
+      },
+    },
+    "/ordens-servico/{id}": {
+      get: {
+        tags: ["Ordens de serviço"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Busca ordem de serviço por id",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
+        ],
+        responses: {
           "200": {
-            "description": "Atualizado",
-            "content": {
+            description: "Encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Emprestimo"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/OrdemServico",
+                },
+              },
+            },
           },
           "400": {
-            "description": "Dados inválidos (mensagem por campo)",
-            "content": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Id não encontrado",
-            "content": {
+            description: "Registro não encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
-          "409": {
-            "description": "Valor repetido em campo único",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
+        },
       },
-      "delete": {
-        "tags": [
-          "Emprestimo"
-        ],
-        "security": [
+      put: {
+        tags: ["Ordens de serviço"],
+        security: [
           {
-            "bearerAuth": []
-          }
+            bearerAuth: [],
+          },
         ],
-        "summary": "Remove (Emprestimo)",
-        "parameters": [
+        summary: "Edita ordem de serviço",
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
         ],
-        "responses": {
-          "204": {
-            "description": "Removido"
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/OrdemServicoEntrada",
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Atualizado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/OrdemServico",
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Dados inválidos — mensagem por campo",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Token ausente ou inválido",
-            "content": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Id não encontrado",
-            "content": {
+            description: "Registro não encontrado",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Registro em uso por outro",
-            "content": {
+            description: "Valor repetido em campo único ou registro em uso",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Erro"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-} as any;
+                schema: {
+                  $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ["Ordens de serviço"],
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        summary: "Remove ordem de serviço",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+              minimum: 1,
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          "204": {
+            description: "Removido",
+          },
+          "401": {
+            description: "Token ausente, inválido ou expirado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+          "404": {
+            description: "Registro não encontrado",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+          "409": {
+            description: "Registro em uso por outro",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
