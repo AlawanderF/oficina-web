@@ -6,7 +6,8 @@
 - **Autenticação:** JWT com validade de 8 h. Todas as rotas de CRUD exigem `Authorization: Bearer <token>`.
 - **Login:** a mensagem de erro é a mesma para e-mail ou senha incorretos, o que evita enumeração de usuários. Há rate limit de 50 tentativas a cada 15 minutos por IP.
 - **Entrada:** todo `POST` e `PUT` é validado com Zod, e o corpo da requisição tem limite de 100 kB.
-- **Cabeçalhos HTTP:** Helmet, com CSP desativada só porque a UI do Swagger usa scripts inline. CORS restrito à origem do frontend (`CORS_ORIGIN`).
+- **Cabeçalhos HTTP:** Helmet com a Content-Security-Policy padrão, inclusive no Swagger. CORS restrito à origem do frontend (`CORS_ORIGIN`).
+- **Limite de requisições:** 50 tentativas de login ou cadastro a cada 15 minutos e 300 requisições por minuto nas rotas autenticadas, por IP.
 - **Configuração:** as variáveis de ambiente são validadas na inicialização. Segredos ficam fora do Git (`.env` está no `.gitignore`).
 - **Automação:** o CodeQL roda em todo PR e uma vez por semana, e o Dependabot verifica as dependências toda semana.
 
