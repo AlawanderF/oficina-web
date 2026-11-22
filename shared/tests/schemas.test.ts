@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clienteSchema, cpfValido, ordemServicoSchema, veiculoSchema } from "../src";
+import { clienteSchema, cpfValido, dataValida, ordemServicoSchema, veiculoSchema } from "../src";
 
 describe("cpfValido", () => {
   it("aceita CPFs com dígitos verificadores corretos", () => {
@@ -75,5 +75,43 @@ describe("ordemServicoSchema", () => {
 
   it("aceita OS aberta sem data de conclusão", () => {
     expect(ordemServicoSchema.safeParse({ ...base, status: "ABERTA" }).success).toBe(true);
+  });
+});
+
+describe("dataValida", () => {
+  it("aceita datas reais no formato AAAA-MM-DD", () => {
+    expect(dataValida("2026-11-22")).toBe(true);
+    expect(dataValida("2024-02-29")).toBe(true); // ano bissexto
+  });
+
+  it("rejeita datas impossíveis, com hora/fuso ou formato errado", () => {
+    for (const d of ["2026-02-30", "2025-02-29", "2026-13-01", "2026-11-01T00:00:00Z", "22/11/2026", ""]) {
+      expect(dataValida(d), d).toBe(false);
+    }
+  });
+});
+
+describe("ordemServicoSchema: valor", () => {
+  const base = {
+    veiculoId: 1,
+    mecanicoId: 1,
+    descricao: "Troca de óleo",
+    status: "ABERTA",
+    dataAbertura: "2026-11-10",
+  };
+
+  it("aceita até 2 casas decimais (inclusive valores com erro de ponto flutuante como 0.1 + 0.2)", () => {
+    expect(ordemServicoSchema.safeParse({ ...base, valor: 1450.5 }).success).toBe(true);
+    expect(ordemServicoSchema.safeParse({ ...base, valor: 0.1 + 0.2 }).success).toBe(true);
+  });
+
+  it("rejeita mais de 2 casas decimais", () => {
+    expect(ordemServicoSchema.safeParse({ ...base, valor: 10.555 }).success).toBe(false);
+  });
+
+  it("rejeita id acima do INT do banco", () => {
+    expect(ordemServicoSchema.safeParse({ ...base, valor: 10, veiculoId: 2_147_483_648 }).success).toBe(
+      false,
+    );
   });
 });
