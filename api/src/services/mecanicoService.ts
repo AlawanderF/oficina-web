@@ -8,7 +8,7 @@ export const mecanicoService = {
 
   async buscarPorId(id: number) {
     const registro = await mecanicoRepository.buscarPorId(id);
-    if (!registro) throw new AppError(404, "Mecânico não encontrado(a)");
+    if (!registro) throw new AppError(404, "Mecânico não encontrado");
     return registro;
   },
 
