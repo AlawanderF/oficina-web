@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  qualidade:
+    name: Lint, formatação e tipos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Prettier
+        run: npm run format:check
+      - name: ESLint
+        run: npm run lint
+      - name: TypeScript (api + frontend)
+        run: npx prisma generate --schema api/prisma/schema.prisma && npm run typecheck
+
+  build:
+    name: Build (api + frontend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Exatamente os comandos exigidos no enunciado
+      - run: npm run build -w api
+      - run: npm run build -w frontend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  testes:
+    name: Testes (unitários + integração com PostgreSQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: oficina
+          POSTGRES_PASSWORD: oficina
+          POSTGRES_DB: oficina
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U oficina -d oficina"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Reproduz o passo a passo do README: .env a partir do exemplo, migrations e seed
+      - name: Criar api/.env a partir do .env.example
+        run: cp api/.env.example api/.env
+      - name: Migrations
+        run: npm run migrate:deploy -w api
+      - name: Seed
+        run: npm run seed -w api
+      - name: Testes do shared (schemas Zod)
+        run: npm run test -w shared
+      - name: Testes de integração da API
+        run: npm run test -w api
+      - name: Smoke test (API sobe, Swagger responde e login do seed funciona)
+        run: |
+          npm run build -w api
+          (cd api && node dist/server.js > ../api.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://localhost:3333/health && break; sleep 1; done
+          curl -sf http://localhost:3333/docs/ > /dev/null
+          curl -sf -X POST http://localhost:3333/auth/login \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"professor@oficina.com\",\"senha\":\"senha1234\"}" | grep -q token
+          echo "API, Swagger e login do seed OK"
+      - name: Log da API (em caso de falha)
+        if: failure()
+        run: cat api.log || true
+
+  auditoria:
+    name: Auditoria de dependências
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm audit --omit=dev --audit-level=high

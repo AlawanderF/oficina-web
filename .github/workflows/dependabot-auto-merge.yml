@@ -1,0 +1,38 @@
+name: Dependabot — aprovação automática
+
+# Bot de revisão: aprova e agenda o merge automático APENAS de PRs do Dependabot
+# com atualizações patch/minor. O merge só acontece depois que o CI passar
+# (regra de proteção da branch main). Atualizações major exigem revisão humana.
+on: pull_request_target
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  aprovar:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    env:
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Metadados da atualização
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Aprovar PR
+        if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        run: |
+          gh pr review --approve "$PR_URL" --body "Atualização ${{ steps.meta.outputs.update-type }} aprovada automaticamente. Merge após o CI passar."
+
+      - name: Habilitar merge automático (squash)
+        if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+
+      - name: Sinalizar atualização major
+        if: steps.meta.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr comment "$PR_URL" --body "Atualização **major**: requer revisão humana (possíveis breaking changes)."
