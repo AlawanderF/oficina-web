@@ -8,7 +8,7 @@ export const clienteService = {
 
   async buscarPorId(id: number) {
     const registro = await clienteRepository.buscarPorId(id);
-    if (!registro) throw new AppError(404, "Cliente não encontrado(a)");
+    if (!registro) throw new AppError(404, "Cliente não encontrado");
     return registro;
   },
 

@@ -67,10 +67,10 @@ npm install
 
 ### 2. Subir o banco de dados
 
-O PostgreSQL roda no Docker, na **porta 5433**, para não conflitar com um Postgres já instalado na máquina:
+O PostgreSQL roda no Docker, na **porta 5433**, para não conflitar com um Postgres já instalado na máquina. O `--wait` só devolve o terminal quando o banco está pronto:
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
 ```
 
 > **Sem Docker?** Crie um banco num PostgreSQL local e ajuste a `DATABASE_URL` no passo 3.
@@ -110,6 +110,16 @@ npm run dev -w frontend
 ```
 
 Acesse <http://localhost:5173>.
+
+### Problemas comuns
+
+| Sintoma                                                             | Causa e solução                                                                                                   |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `Can't reach database server at localhost:5433`                     | O banco não está no ar. Rode `docker compose up -d --wait` e confira com `docker ps`.                             |
+| `port is already allocated` ao subir o Docker                       | A porta 5433 está em uso. Troque `"5433:5432"` no `docker-compose.yml` e a porta na `DATABASE_URL` do `api/.env`. |
+| `Variáveis de ambiente inválidas` ao subir a API                    | O arquivo `api/.env` não existe. Refaça o passo 3.                                                                |
+| `EPERM: operation not permitted, rename ... query_engine` (Windows) | A API está rodando e segura o arquivo do Prisma. Pare a API (Ctrl+C) e repita o comando.                          |
+| Docker Desktop: "WSL needs updating"                                | No PowerShell como administrador: `wsl --update`. Depois reinicie o Docker Desktop.                               |
 
 ---
 

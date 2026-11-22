@@ -67,6 +67,8 @@ export const swaggerSpec = {
         properties: {
           nome: {
             type: "string",
+            minLength: 3,
+            maxLength: 120,
             example: "Maria Silva",
           },
           email: {
@@ -77,6 +79,7 @@ export const swaggerSpec = {
           senha: {
             type: "string",
             minLength: 8,
+            description: "8 caracteres a 72 bytes",
             example: "minhaSenha123",
           },
         },
@@ -282,11 +285,14 @@ export const swaggerSpec = {
           },
           valor: {
             type: "number",
-            example: 1450,
+            minimum: 0,
+            description: "No máximo 2 casas decimais",
+            example: 1450.5,
           },
           dataAbertura: {
             type: "string",
             format: "date",
+            description: "AAAA-MM-DD",
             example: "2026-11-22",
           },
           dataConclusao: {
@@ -312,8 +318,8 @@ export const swaggerSpec = {
           },
           valor: {
             type: "string",
-            description: "Decimal serializado como texto",
-            example: "1450.00",
+            description: "DECIMAL(10,2) serializado como texto, sem zeros à direita",
+            example: "1450.5",
           },
           dataAbertura: {
             type: "string",
@@ -382,11 +388,21 @@ export const swaggerSpec = {
             },
           },
           "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+            description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+          "429": {
+            description: "Muitas tentativas: aguarde alguns minutos",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -439,6 +455,16 @@ export const swaggerSpec = {
           },
           "401": {
             description: "E-mail ou senha inválidos",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
+          },
+          "429": {
+            description: "Muitas tentativas: aguarde alguns minutos",
             content: {
               "application/json": {
                 schema: {
@@ -535,11 +561,21 @@ export const swaggerSpec = {
             },
           },
           "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+            description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+          "413": {
+            description: "Corpo da requisição maior que 100 kB",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -564,6 +600,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -580,11 +617,11 @@ export const swaggerSpec = {
             },
           },
           "400": {
-            description: "Dados inválidos — mensagem por campo",
+            description: "Id inválido",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/ErroValidacao",
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -627,6 +664,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -683,11 +721,21 @@ export const swaggerSpec = {
             },
           },
           "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+            description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+          "413": {
+            description: "Corpo da requisição maior que 100 kB",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -710,6 +758,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -717,6 +766,16 @@ export const swaggerSpec = {
         responses: {
           "204": {
             description: "Removido",
+          },
+          "400": {
+            description: "Id inválido",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "401": {
             description: "Token ausente, inválido ou expirado",
@@ -739,7 +798,7 @@ export const swaggerSpec = {
             },
           },
           "409": {
-            description: "Registro em uso por outro",
+            description: "Registro vinculado a outros cadastros",
             content: {
               "application/json": {
                 schema: {
@@ -816,7 +875,7 @@ export const swaggerSpec = {
             },
           },
           "400": {
-            description: "Dados inválidos — mensagem por campo",
+            description: "Dados inválidos ou registro relacionado inexistente — mensagem por campo",
             content: {
               "application/json": {
                 schema: {
@@ -836,11 +895,21 @@ export const swaggerSpec = {
             },
           },
           "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+            description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+          "413": {
+            description: "Corpo da requisição maior que 100 kB",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -865,6 +934,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -881,11 +951,11 @@ export const swaggerSpec = {
             },
           },
           "400": {
-            description: "Dados inválidos — mensagem por campo",
+            description: "Id inválido",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/ErroValidacao",
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -928,6 +998,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -954,7 +1025,7 @@ export const swaggerSpec = {
             },
           },
           "400": {
-            description: "Dados inválidos — mensagem por campo",
+            description: "Dados inválidos ou registro relacionado inexistente — mensagem por campo",
             content: {
               "application/json": {
                 schema: {
@@ -984,11 +1055,21 @@ export const swaggerSpec = {
             },
           },
           "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+            description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
+                },
+              },
+            },
+          },
+          "413": {
+            description: "Corpo da requisição maior que 100 kB",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -1011,6 +1092,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -1018,6 +1100,16 @@ export const swaggerSpec = {
         responses: {
           "204": {
             description: "Removido",
+          },
+          "400": {
+            description: "Id inválido",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "401": {
             description: "Token ausente, inválido ou expirado",
@@ -1040,7 +1132,7 @@ export const swaggerSpec = {
             },
           },
           "409": {
-            description: "Registro em uso por outro",
+            description: "Registro vinculado a outros cadastros",
             content: {
               "application/json": {
                 schema: {
@@ -1136,12 +1228,12 @@ export const swaggerSpec = {
               },
             },
           },
-          "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+          "413": {
+            description: "Corpo da requisição maior que 100 kB",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/ErroValidacao",
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -1166,6 +1258,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -1182,11 +1275,11 @@ export const swaggerSpec = {
             },
           },
           "400": {
-            description: "Dados inválidos — mensagem por campo",
+            description: "Id inválido",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/ErroValidacao",
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -1229,6 +1322,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -1284,12 +1378,12 @@ export const swaggerSpec = {
               },
             },
           },
-          "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+          "413": {
+            description: "Corpo da requisição maior que 100 kB",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/ErroValidacao",
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -1312,6 +1406,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -1319,6 +1414,16 @@ export const swaggerSpec = {
         responses: {
           "204": {
             description: "Removido",
+          },
+          "400": {
+            description: "Id inválido",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "401": {
             description: "Token ausente, inválido ou expirado",
@@ -1341,7 +1446,7 @@ export const swaggerSpec = {
             },
           },
           "409": {
-            description: "Registro em uso por outro",
+            description: "Registro vinculado a outros cadastros",
             content: {
               "application/json": {
                 schema: {
@@ -1418,7 +1523,7 @@ export const swaggerSpec = {
             },
           },
           "400": {
-            description: "Dados inválidos — mensagem por campo",
+            description: "Dados inválidos ou registro relacionado inexistente — mensagem por campo",
             content: {
               "application/json": {
                 schema: {
@@ -1437,12 +1542,12 @@ export const swaggerSpec = {
               },
             },
           },
-          "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+          "413": {
+            description: "Corpo da requisição maior que 100 kB",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/ErroValidacao",
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -1467,6 +1572,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -1483,11 +1589,11 @@ export const swaggerSpec = {
             },
           },
           "400": {
-            description: "Dados inválidos — mensagem por campo",
+            description: "Id inválido",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/ErroValidacao",
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -1530,6 +1636,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -1556,7 +1663,7 @@ export const swaggerSpec = {
             },
           },
           "400": {
-            description: "Dados inválidos — mensagem por campo",
+            description: "Dados inválidos ou registro relacionado inexistente — mensagem por campo",
             content: {
               "application/json": {
                 schema: {
@@ -1585,12 +1692,12 @@ export const swaggerSpec = {
               },
             },
           },
-          "409": {
-            description: "Valor repetido em campo único ou registro em uso",
+          "413": {
+            description: "Corpo da requisição maior que 100 kB",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/ErroValidacao",
+                  $ref: "#/components/schemas/Erro",
                 },
               },
             },
@@ -1613,6 +1720,7 @@ export const swaggerSpec = {
             schema: {
               type: "integer",
               minimum: 1,
+              maximum: 2147483647,
             },
             example: 1,
           },
@@ -1620,6 +1728,16 @@ export const swaggerSpec = {
         responses: {
           "204": {
             description: "Removido",
+          },
+          "400": {
+            description: "Id inválido",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Erro",
+                },
+              },
+            },
           },
           "401": {
             description: "Token ausente, inválido ou expirado",
@@ -1633,16 +1751,6 @@ export const swaggerSpec = {
           },
           "404": {
             description: "Registro não encontrado",
-            content: {
-              "application/json": {
-                schema: {
-                  $ref: "#/components/schemas/Erro",
-                },
-              },
-            },
-          },
-          "409": {
-            description: "Registro em uso por outro",
             content: {
               "application/json": {
                 schema: {

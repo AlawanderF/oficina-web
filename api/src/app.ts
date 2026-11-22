@@ -11,9 +11,9 @@ import { swaggerSpec } from "./swagger";
 export const app = express();
 
 app.disable("x-powered-by");
-// CSP desligada apenas porque a UI do Swagger usa scripts inline
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: config.CORS_ORIGIN.split(",") }));
+// Cabeçalhos de segurança com a CSP padrão (o Swagger UI funciona com ela: scripts externos)
+app.use(helmet());
+app.use(cors({ origin: config.CORS_ORIGIN.split(",").map((o) => o.trim()) }));
 app.use(express.json({ limit: "100kb" }));
 
 app.get("/health", (_req, res) => {
