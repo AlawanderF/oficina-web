@@ -47,7 +47,7 @@ jobs:
       # Exatamente os comandos exigidos no enunciado
       - run: npm run build -w api
       - run: npm run build -w frontend
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: frontend-dist
           path: frontend/dist
