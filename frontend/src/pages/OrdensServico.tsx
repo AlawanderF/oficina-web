@@ -1,5 +1,6 @@
 import {
   Button,
+  Group,
   NumberInput,
   Select,
   SimpleGrid,
@@ -16,6 +17,7 @@ import ConfirmarRemocao from "../components/ConfirmarRemocao";
 import DataPanel from "../components/DataPanel";
 import FormModal from "../components/FormModal";
 import PageHeader from "../components/PageHeader";
+import Placa from "../components/Placa";
 import RowActions from "../components/RowActions";
 import StatusBadge from "../components/StatusBadge";
 import { useCrud } from "../hooks/useCrud";
@@ -144,17 +146,20 @@ export default function OrdensServico() {
         {filtrados.map((o) => (
           <Table.Tr key={o.id}>
             <Table.Td className="mono" c="dimmed">
-              #{String(o.id).padStart(4, "0")}
+              {String(o.id).padStart(4, "0")}
             </Table.Td>
             <Table.Td>
-              <Stack gap={0}>
-                <Text size="sm" fw={600}>
-                  <span className="mono">{formatarPlaca(o.veiculo.placa)}</span> · {o.veiculo.modelo}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  {o.veiculo.cliente.nome}
-                </Text>
-              </Stack>
+              <Group gap="sm" wrap="nowrap">
+                <Placa placa={o.veiculo.placa} />
+                <Stack gap={0}>
+                  <Text size="sm" fw={500}>
+                    {o.veiculo.modelo}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {o.veiculo.cliente.nome}
+                  </Text>
+                </Stack>
+              </Group>
             </Table.Td>
             <Table.Td maw={280}>
               <Text size="sm" lineClamp={2}>
