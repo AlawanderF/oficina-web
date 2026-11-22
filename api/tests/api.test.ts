@@ -41,9 +41,22 @@ describe("Auth", () => {
     expect(salvo.senha).toMatch(/^\$2[aby]\$/);
   });
 
-  it("recusa e-mail repetido (409)", async () => {
+  it("recusa e-mail repetido (409) com o erro no campo email", async () => {
     const res = await request(app).post("/auth/cadastro").send(usuario);
     expect(res.status).toBe(409);
+    expect(res.body.erros).toHaveProperty("email");
+  });
+
+  it("login leva tempo semelhante para e-mail existente e inexistente (não revela usuários)", async () => {
+    const medir = async (email: string) => {
+      const inicio = performance.now();
+      await request(app).post("/auth/login").send({ email, senha: "senhaErrada123" });
+      return performance.now() - inicio;
+    };
+    const existente = await medir(usuario.email);
+    const inexistente = await medir(`nao-existe-${sufixo}@oficina.com`);
+    // sem o hash falso, o inexistente responde ~20x mais rápido (não roda o bcrypt)
+    expect(inexistente).toBeGreaterThan(existente * 0.3);
   });
 
   it("recusa senha errada (401)", async () => {
@@ -67,7 +80,10 @@ describe("Auth", () => {
 
 describe("Fluxo completo: cliente -> veículo -> mecânico -> ordem de serviço", () => {
   const cpf = gerarCpf();
-  const placa = `TST${Math.floor(Math.random() * 10)}A${sufixo.slice(-2)}`;
+  // placa aleatória no padrão Mercosul (~17 milhões de combinações): evita colisão entre execuções
+  const letra = () => String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  const digito = () => Math.floor(Math.random() * 10);
+  const placa = `T${letra()}${letra()}${digito()}${letra()}${digito()}${digito()}`;
   const ids = { cliente: 0, veiculo: 0, mecanico: 0, ordem: 0 };
 
   beforeAll(() => {
@@ -199,5 +215,126 @@ describe("Fluxo completo: cliente -> veículo -> mecânico -> ordem de serviço"
     expect((await request(app).delete(`/mecanicos/${ids.mecanico}`).set(auth())).status).toBe(204);
     expect((await request(app).delete(`/clientes/${ids.cliente}`).set(auth())).status).toBe(204);
     expect((await request(app).get(`/clientes/${ids.cliente}`).set(auth())).status).toBe(404);
+  });
+});
+
+/*
+ * Regressões encontradas na auditoria: entradas que antes derrubavam a API com 500.
+ * Cada teste garante que a resposta agora é um 4xx com mensagem clara.
+ */
+describe("Robustez: entradas inválidas nunca viram 500", () => {
+  let tk = "";
+  const H = () => ({ Authorization: `Bearer ${tk}` });
+  const os = (extra: Record<string, unknown>) => ({
+    veiculoId: 1,
+    mecanicoId: 1,
+    descricao: "Teste de robustez",
+    status: "ABERTA",
+    valor: 100,
+    dataAbertura: "2026-11-01",
+    ...extra,
+  });
+
+  beforeAll(async () => {
+    const res = await request(app).post("/auth/login").send({ email: usuario.email, senha: usuario.senha });
+    tk = res.body.token;
+  });
+
+  it("id acima do INT do banco, em notação científica ou hexadecimal -> 400", async () => {
+    for (const id of ["2147483648", "99999999999", "1e3", "0x10", "-1", "0"]) {
+      const res = await request(app).get(`/clientes/${id}`).set(H());
+      expect(res.status, `id ${id}`).toBe(400);
+    }
+  });
+
+  it("chave estrangeira acima do INT do banco -> 400 no campo", async () => {
+    const res = await request(app)
+      .post("/veiculos")
+      .set(H())
+      .send({ placa: "ZZZ1A11", marca: "Fiat", modelo: "Uno", ano: 2010, clienteId: 2147483648 });
+    expect(res.status).toBe(400);
+    expect(res.body.erros).toHaveProperty("clienteId");
+  });
+
+  it("cliente inexistente no veículo -> 400 com erro no campo clienteId (não 409 genérico)", async () => {
+    const res = await request(app)
+      .post("/veiculos")
+      .set(H())
+      .send({ placa: "ZZZ1A12", marca: "Fiat", modelo: "Uno", ano: 2010, clienteId: 2147483000 });
+    expect(res.status).toBe(400);
+    expect(res.body.erros.clienteId).toBe("Cliente não encontrado");
+  });
+
+  it("veículo e mecânico inexistentes na OS -> 400 com erro nos dois campos", async () => {
+    const res = await request(app)
+      .post("/ordens-servico")
+      .set(H())
+      .send(os({ veiculoId: 2147483000, mecanicoId: 2147483001 }));
+    expect(res.status).toBe(400);
+    expect(res.body.erros).toHaveProperty("veiculoId");
+    expect(res.body.erros).toHaveProperty("mecanicoId");
+  });
+
+  it("datas impossíveis ou com fuso/hora -> 400", async () => {
+    for (const data of ["2026-13-45", "2026-02-30", "2026-11-01abc", "2026-11-01T01:00:00+03:00"]) {
+      const res = await request(app)
+        .post("/ordens-servico")
+        .set(H())
+        .send(os({ dataAbertura: data }));
+      expect(res.status, data).toBe(400);
+      expect(res.body.erros).toHaveProperty("dataAbertura");
+    }
+  });
+
+  it("valor com mais de 2 casas decimais -> 400 (não arredonda em silêncio)", async () => {
+    const res = await request(app)
+      .post("/ordens-servico")
+      .set(H())
+      .send(os({ valor: 10.555 }));
+    expect(res.status).toBe(400);
+    expect(res.body.erros).toHaveProperty("valor");
+  });
+
+  it("caractere NUL em texto -> 400 (o PostgreSQL recusaria com 500)", async () => {
+    const res = await request(app)
+      .post("/mecanicos")
+      .set(H())
+      .send({ nome: "Ab\u0000c", especialidade: "Motor", telefone: "11999998888" });
+    expect(res.status).toBe(400);
+    expect(res.body.erros).toHaveProperty("nome");
+  });
+
+  it("tipo errado devolve mensagem em português", async () => {
+    const res = await request(app)
+      .post("/clientes")
+      .set(H())
+      .send({ nome: "Fulano de Tal", cpf: 52998224725, telefone: "11999998888", email: "a@b.com" });
+    expect(res.status).toBe(400);
+    expect(res.body.erros.cpf).toBe("CPF deve ser um texto");
+  });
+
+  it("corpo maior que 100 kB -> 413", async () => {
+    const res = await request(app)
+      .post("/clientes")
+      .set(H())
+      .set("Content-Type", "application/json")
+      .send(JSON.stringify({ nome: "a".repeat(120_000) }));
+    expect(res.status).toBe(413);
+  });
+
+  it("JSON malformado -> 400", async () => {
+    const res = await request(app)
+      .post("/clientes")
+      .set(H())
+      .set("Content-Type", "application/json")
+      .send("{nome:");
+    expect(res.status).toBe(400);
+  });
+
+  it("token com algoritmo 'none' é recusado -> 401", async () => {
+    const res = await request(app)
+      .get("/clientes")
+      .set({ Authorization: "Bearer eyJhbGciOiJub25lIn0.eyJzdWIiOiIxIn0." });
+    expect(res.status).toBe(401);
   });
 });
