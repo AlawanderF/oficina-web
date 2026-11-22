@@ -1,13 +1,34 @@
 {
-  "name": "biblioteca",
+  "name": "oficina-web",
+  "version": "1.0.0",
   "private": true,
-  "workspaces": ["shared", "api", "frontend"],
+  "description": "Sistema web de gestão para oficina mecânica (PostgreSQL, Prisma, Express, React)",
+  "workspaces": [
+    "shared",
+    "api",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "postinstall": "npm run build -w shared",
-    "build": "npm run build -w shared && npm run build -w api && npm run build -w frontend",
     "dev:api": "npm run dev -w api",
     "dev:frontend": "npm run dev -w frontend",
-    "db:migrate": "npm run migrate -w api",
-    "db:seed": "npm run seed -w api"
+    "build": "npm run build -w shared && npm run build -w api && npm run build -w frontend",
+    "typecheck": "tsc -p api/tsconfig.json && tsc -p frontend/tsconfig.json",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test -w shared && npm run test -w api"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "eslint": "^9.15.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "globals": "^15.12.0",
+    "prettier": "^3.3.3",
+    "typescript-eslint": "^8.15.0"
   }
 }
