@@ -4,7 +4,10 @@ export const formatarCpf = (cpf: string) => cpf.replace(/^(\d{3})(\d{3})(\d{3})(
 
 export const mascararCpf = (valor: string) => {
   const d = valor.replace(/\D/g, "").slice(0, 11);
-  return d.replace(/^(\d{3})(\d)/, "$1.$2").replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1-$2");
+  return d
+    .replace(/^(\d{3})(\d)/, "$1.$2")
+    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1-$2");
 };
 
 export const mascararTelefone = (valor: string) => {
@@ -18,7 +21,10 @@ export const mascararTelefone = (valor: string) => {
 };
 
 export const mascararPlaca = (valor: string) => {
-  const d = valor.replace(/[^a-z0-9]/gi, "").slice(0, 7).toUpperCase();
+  const d = valor
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(0, 7)
+    .toUpperCase();
   return /^[A-Z]{3}\d{0,4}$/.test(d) && d.length > 3 ? `${d.slice(0, 3)}-${d.slice(3)}` : d;
 };
 

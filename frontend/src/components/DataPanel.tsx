@@ -4,6 +4,7 @@ import {
   Center,
   Group,
   Paper,
+  Pagination,
   Skeleton,
   Stack,
   Table,
@@ -12,7 +13,7 @@ import {
   ThemeIcon,
 } from "@mantine/core";
 import { IconAlertCircle, IconInbox, IconSearch } from "@tabler/icons-react";
-import type { ReactNode } from "react";
+import { Children, type ReactNode, useEffect, useState } from "react";
 
 interface Props {
   /** Texto da busca e callback (busca local com .filter) */
@@ -27,6 +28,9 @@ interface Props {
   /** Quantidade exibida e total, para o rodapé */
   exibindo: number;
   total: number;
+  /** Quantidade após busca e filtros. */
+  totalFiltrado?: number;
+  resetKey?: string | null;
   /** Larguras mínimas para rolagem horizontal no celular */
   larguraMinima?: number;
   cabecalho: ReactNode;
@@ -36,7 +40,21 @@ interface Props {
 /** Painel padrão das listagens: busca, estados de carregamento, vazio e erro, tabela e rodapé. */
 export default function DataPanel(props: Props) {
   const { busca, onBusca, placeholderBusca, filtros, carregando, erro, onTentarNovamente } = props;
-  const { exibindo, total, larguraMinima = 760, cabecalho, children } = props;
+  const {
+    exibindo,
+    total,
+    totalFiltrado = exibindo,
+    resetKey,
+    larguraMinima = 760,
+    cabecalho,
+    children,
+  } = props;
+  const [pagina, setPagina] = useState(1);
+  const porPagina = 10;
+  const paginas = Math.ceil(totalFiltrado / porPagina);
+  const linhas = Children.toArray(children);
+  const linhasVisiveis = linhas.slice((pagina - 1) * porPagina, pagina * porPagina);
+  useEffect(() => setPagina(1), [busca, resetKey]);
 
   return (
     <Paper p={0} shadow="xs">
@@ -96,21 +114,23 @@ export default function DataPanel(props: Props) {
         <Table.ScrollContainer minWidth={larguraMinima}>
           <Table className="data-table" striped={false}>
             <Table.Thead>{cabecalho}</Table.Thead>
-            <Table.Tbody>{children}</Table.Tbody>
+            <Table.Tbody>{linhasVisiveis}</Table.Tbody>
           </Table>
         </Table.ScrollContainer>
       )}
 
       {!carregando && !erro && total > 0 && (
-        <Text
-          size="xs"
-          c="dimmed"
-          px="md"
-          py="sm"
+        <Group
+          justify="space-between"
+          p="md"
           style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}
         >
-          Exibindo {exibindo} de {total} registro(s)
-        </Text>
+          <Text size="xs" c="dimmed">
+            Exibindo {totalFiltrado === 0 ? 0 : (pagina - 1) * porPagina + 1}–
+            {Math.min(pagina * porPagina, totalFiltrado)} de {totalFiltrado} registro(s)
+          </Text>
+          {paginas > 1 && <Pagination size="sm" total={paginas} value={pagina} onChange={setPagina} />}
+        </Group>
       )}
     </Paper>
   );

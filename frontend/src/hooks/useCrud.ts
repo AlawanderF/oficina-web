@@ -1,5 +1,5 @@
 import { notifications } from "@mantine/notifications";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ZodType, ZodTypeDef } from "zod";
 import type { CrudApi } from "../services/api";
 import { errosDaApi, errosDoZod, type ErrosCampos } from "../services/erros";
@@ -39,16 +39,25 @@ export function useCrud<T extends { id: number }, F, I>(opcoes: Opcoes<T, F, I>)
 
   const [removendo, setRemovendo] = useState<T | null>(null);
   const [confirmandoRemocao, setConfirmandoRemocao] = useState(false);
+  const chamadaAtual = useRef(0);
+  const carregouUmaVez = useRef(false);
 
   const carregar = useCallback(async () => {
-    setCarregando(true);
+    const chamada = ++chamadaAtual.current;
+    if (!carregouUmaVez.current) setCarregando(true);
     try {
-      setRegistros(await api.listar());
+      const dados = await api.listar();
+      if (chamada !== chamadaAtual.current) return;
+      setRegistros(dados);
       setErroLista("");
     } catch (erro) {
+      if (chamada !== chamadaAtual.current) return;
       setErroLista(errosDaApi(erro).mensagem);
     } finally {
-      setCarregando(false);
+      if (chamada === chamadaAtual.current) {
+        carregouUmaVez.current = true;
+        setCarregando(false);
+      }
     }
   }, [api]);
 
@@ -60,7 +69,7 @@ export function useCrud<T extends { id: number }, F, I>(opcoes: Opcoes<T, F, I>)
   /** Atualiza um campo do formulário e limpa o erro dele. */
   function alterar<K extends keyof F>(campo: K, valor: F[K]) {
     setForm((atual) => ({ ...atual, [campo]: valor }));
-    setErros(({ [campo as string]: _removido, ...resto }) => resto);
+    setErros(({ [campo as string]: _removido, geral: _geral, ...resto }) => resto);
   }
 
   function abrirNovo() {
@@ -77,7 +86,9 @@ export function useCrud<T extends { id: number }, F, I>(opcoes: Opcoes<T, F, I>)
     setModalAberto(true);
   }
 
-  const fecharModal = () => setModalAberto(false);
+  const fecharModal = () => {
+    if (!salvando) setModalAberto(false);
+  };
 
   /** Botão Salvar: valida no navegador -> chama a API -> recarrega a lista. */
   async function salvar() {
@@ -111,7 +122,9 @@ export function useCrud<T extends { id: number }, F, I>(opcoes: Opcoes<T, F, I>)
   }
 
   const pedirRemocao = (registro: T) => setRemovendo(registro);
-  const cancelarRemocao = () => setRemovendo(null);
+  const cancelarRemocao = () => {
+    if (!confirmandoRemocao) setRemovendo(null);
+  };
 
   async function confirmarRemocao() {
     if (!removendo) return;

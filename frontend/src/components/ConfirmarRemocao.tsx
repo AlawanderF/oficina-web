@@ -1,5 +1,6 @@
 import { Button, Group, Modal, Stack, Text, ThemeIcon } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
 interface Props {
   aberto: boolean;
@@ -10,8 +11,20 @@ interface Props {
 }
 
 export default function ConfirmarRemocao({ aberto, descricao, carregando, onConfirmar, onCancelar }: Props) {
+  const [descricaoExibida, setDescricaoExibida] = useState(descricao);
+  useEffect(() => {
+    if (aberto) setDescricaoExibida(descricao);
+  }, [aberto, descricao]);
   return (
-    <Modal opened={aberto} onClose={onCancelar} withCloseButton={false} size="sm">
+    <Modal
+      opened={aberto}
+      onClose={onCancelar}
+      withCloseButton={false}
+      closeOnEscape={!carregando}
+      closeOnClickOutside={!carregando}
+      title="Confirmar exclusão"
+      size="sm"
+    >
       <Stack align="center" gap="sm" ta="center" pt="sm">
         <ThemeIcon size={52} radius="xl" color="red" variant="light">
           <IconTrash size={26} />
@@ -20,7 +33,7 @@ export default function ConfirmarRemocao({ aberto, descricao, carregando, onConf
           Confirmar exclusão
         </Text>
         <Text size="sm" c="dimmed">
-          Deseja remover <b>{descricao}</b>? Esta ação não pode ser desfeita.
+          Deseja remover <b>{descricaoExibida}</b>? Esta ação não pode ser desfeita.
         </Text>
       </Stack>
       <Group grow mt="lg">

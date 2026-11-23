@@ -36,6 +36,9 @@ export default function FormModal({
       onClose={onFechar}
       title={titulo}
       size={tamanho ?? "md"}
+      closeOnEscape={!salvando}
+      closeOnClickOutside={!salvando}
+      withCloseButton={!salvando}
       styles={{ title: { fontWeight: 650, fontSize: 18 } }}
     >
       <form onSubmit={enviar} noValidate>

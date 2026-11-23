@@ -1,6 +1,9 @@
 import {
   Button,
+  Alert,
+  Anchor,
   Group,
+  Loader,
   NumberInput,
   Select,
   SimpleGrid,
@@ -9,9 +12,11 @@ import {
   Text,
   Textarea,
   TextInput,
+  VisuallyHidden,
 } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ordemServicoSchema, STATUS_ORDEM, STATUS_ORDEM_LABEL, type StatusOrdem } from "shared";
 import ConfirmarRemocao from "../components/ConfirmarRemocao";
 import DataPanel from "../components/DataPanel";
@@ -21,6 +26,7 @@ import Placa from "../components/Placa";
 import RowActions from "../components/RowActions";
 import StatusBadge from "../components/StatusBadge";
 import { useCrud } from "../hooks/useCrud";
+import { useOpcoes } from "../hooks/useOpcoes";
 import { contem, formatarData, formatarMoeda, formatarPlaca, hojeIso, paraInputData } from "../lib/formatos";
 import { mecanicosApi, ordensApi, veiculosApi } from "../services/api";
 import type { Mecanico, OrdemServico, Veiculo } from "../services/types";
@@ -72,16 +78,10 @@ export default function OrdensServico() {
   });
 
   // Selects alimentados pela API: veículo (com proprietário) e mecânico
-  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-  const [mecanicos, setMecanicos] = useState<Mecanico[]>([]);
-  useEffect(() => {
-    Promise.all([veiculosApi.listar(), mecanicosApi.listar()])
-      .then(([v, m]) => {
-        setVeiculos(v);
-        setMecanicos(m);
-      })
-      .catch(() => undefined);
-  }, [crud.modalAberto]);
+  const opcoesVeiculos = useOpcoes<Veiculo>(veiculosApi.listar, crud.modalAberto);
+  const opcoesMecanicos = useOpcoes<Mecanico>(mecanicosApi.listar, crud.modalAberto);
+  const veiculos = opcoesVeiculos.dados;
+  const mecanicos = opcoesMecanicos.dados;
 
   // Busca por texto + filtro por status, ambos com .filter
   const [busca, setBusca] = useState("");
@@ -120,7 +120,7 @@ export default function OrdensServico() {
             clearable
             data={opcoesStatus}
             value={filtroStatus}
-            onChange={setFiltroStatus}
+            onChange={(valor) => setFiltroStatus(valor)}
             w={200}
           />
         }
@@ -129,6 +129,8 @@ export default function OrdensServico() {
         onTentarNovamente={crud.recarregar}
         exibindo={filtrados.length}
         total={crud.registros.length}
+        totalFiltrado={filtrados.length}
+        resetKey={filtroStatus}
         larguraMinima={980}
         cabecalho={
           <Table.Tr>
@@ -139,7 +141,9 @@ export default function OrdensServico() {
             <Table.Th>Status</Table.Th>
             <Table.Th ta="right">Valor</Table.Th>
             <Table.Th>Abertura</Table.Th>
-            <Table.Th w={90} />
+            <Table.Th w={90}>
+              <VisuallyHidden>Ações</VisuallyHidden>
+            </Table.Th>
           </Table.Tr>
         }
       >
@@ -175,7 +179,11 @@ export default function OrdensServico() {
             </Table.Td>
             <Table.Td>{formatarData(o.dataAbertura)}</Table.Td>
             <Table.Td>
-              <RowActions onEditar={() => crud.abrirEdicao(o)} onRemover={() => crud.pedirRemocao(o)} />
+              <RowActions
+                descricao={`OS ${String(o.id).padStart(4, "0")}`}
+                onEditar={() => crud.abrirEdicao(o)}
+                onRemover={() => crud.pedirRemocao(o)}
+              />
             </Table.Td>
           </Table.Tr>
         ))}
@@ -192,6 +200,42 @@ export default function OrdensServico() {
         onSalvar={crud.salvar}
         tamanho="lg"
       >
+        {opcoesVeiculos.erro && (
+          <Alert color="red" title="Erro ao carregar veículos">
+            {opcoesVeiculos.erro}
+            <Anchor component="button" onClick={() => void opcoesVeiculos.recarregar}>
+              {" "}
+              Tentar novamente
+            </Anchor>
+          </Alert>
+        )}
+        {opcoesMecanicos.erro && (
+          <Alert color="red" title="Erro ao carregar mecânicos">
+            {opcoesMecanicos.erro}
+            <Anchor component="button" onClick={() => void opcoesMecanicos.recarregar}>
+              {" "}
+              Tentar novamente
+            </Anchor>
+          </Alert>
+        )}
+        {!opcoesVeiculos.carregando && !opcoesVeiculos.erro && veiculos.length === 0 && (
+          <Alert color="blue">
+            Cadastre um veículo primeiro:{" "}
+            <Anchor component={Link} to="/veiculos">
+              Veículos
+            </Anchor>
+            .
+          </Alert>
+        )}
+        {!opcoesMecanicos.carregando && !opcoesMecanicos.erro && mecanicos.length === 0 && (
+          <Alert color="blue">
+            Cadastre um mecânico primeiro:{" "}
+            <Anchor component={Link} to="/mecanicos">
+              Mecânicos
+            </Anchor>
+            .
+          </Alert>
+        )}
         <SimpleGrid cols={{ base: 1, sm: 2 }}>
           <Select
             label="Veículo"
@@ -204,6 +248,8 @@ export default function OrdensServico() {
               label: `${formatarPlaca(v.placa)} · ${v.modelo} (${v.cliente.nome})`,
             }))}
             value={form.veiculoId}
+            disabled={opcoesVeiculos.carregando || !!opcoesVeiculos.erro || veiculos.length === 0}
+            rightSection={opcoesVeiculos.carregando ? <Loader size={16} /> : undefined}
             error={erros.veiculoId}
             onChange={(v) => alterar("veiculoId", v)}
           />
@@ -215,6 +261,8 @@ export default function OrdensServico() {
             nothingFoundMessage="Nenhum mecânico encontrado"
             data={mecanicos.map((m) => ({ value: String(m.id), label: `${m.nome} · ${m.especialidade}` }))}
             value={form.mecanicoId}
+            disabled={opcoesMecanicos.carregando || !!opcoesMecanicos.erro || mecanicos.length === 0}
+            rightSection={opcoesMecanicos.carregando ? <Loader size={16} /> : undefined}
             error={erros.mecanicoId}
             onChange={(v) => alterar("mecanicoId", v)}
           />
@@ -239,7 +287,12 @@ export default function OrdensServico() {
             data={opcoesStatus}
             value={form.status}
             error={erros.status}
-            onChange={(v) => v && alterar("status", v as StatusOrdem)}
+            onChange={(v) => {
+              if (v) {
+                alterar("status", v as StatusOrdem);
+                alterar("dataConclusao", form.dataConclusao);
+              }
+            }}
           />
           <NumberInput
             label="Valor"

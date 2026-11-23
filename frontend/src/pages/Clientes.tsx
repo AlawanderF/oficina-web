@@ -1,4 +1,4 @@
-import { Button, SimpleGrid, Table, Text, TextInput } from "@mantine/core";
+import { Button, SimpleGrid, Table, Text, TextInput, VisuallyHidden } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { clienteSchema } from "shared";
@@ -58,7 +58,9 @@ export default function Clientes() {
             <Table.Th>CPF</Table.Th>
             <Table.Th>Telefone</Table.Th>
             <Table.Th>E-mail</Table.Th>
-            <Table.Th w={90} />
+            <Table.Th w={90}>
+              <VisuallyHidden>Ações</VisuallyHidden>
+            </Table.Th>
           </Table.Tr>
         }
       >
@@ -73,7 +75,11 @@ export default function Clientes() {
             <Table.Td>{formatarTelefone(c.telefone)}</Table.Td>
             <Table.Td>{c.email}</Table.Td>
             <Table.Td>
-              <RowActions onEditar={() => crud.abrirEdicao(c)} onRemover={() => crud.pedirRemocao(c)} />
+              <RowActions
+                descricao={c.nome}
+                onEditar={() => crud.abrirEdicao(c)}
+                onRemover={() => crud.pedirRemocao(c)}
+              />
             </Table.Td>
           </Table.Tr>
         ))}

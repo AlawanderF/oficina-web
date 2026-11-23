@@ -1,5 +1,6 @@
 import {
   Alert,
+  Button,
   Anchor,
   Grid,
   Group,
@@ -21,7 +22,7 @@ import {
   IconClipboardList,
   IconReceipt,
 } from "@tabler/icons-react";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { STATUS_ORDEM, STATUS_ORDEM_LABEL } from "shared";
 import GraficoFaturamento, { type PontoMensal } from "../components/GraficoFaturamento";
@@ -81,12 +82,28 @@ function Cartao({ titulo, acao, children }: { titulo: string; acao?: ReactNode; 
 export default function Dashboard() {
   const [dados, setDados] = useState<Dados | null>(null);
   const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
-    Promise.all([ordensApi.listar(), clientesApi.listar(), veiculosApi.listar(), mecanicosApi.listar()])
-      .then(([ordens, clientes, veiculos, mecanicos]) => setDados({ ordens, clientes, veiculos, mecanicos }))
-      .catch((e) => setErro(errosDaApi(e).mensagem));
+  const carregar = useCallback(async () => {
+    setCarregando(true);
+    setErro("");
+    try {
+      const [ordens, clientes, veiculos, mecanicos] = await Promise.all([
+        ordensApi.listar(),
+        clientesApi.listar(),
+        veiculosApi.listar(),
+        mecanicosApi.listar(),
+      ]);
+      setDados({ ordens, clientes, veiculos, mecanicos });
+    } catch (e) {
+      setErro(errosDaApi(e).mensagem);
+    } finally {
+      setCarregando(false);
+    }
   }, []);
+  useEffect(() => {
+    void carregar();
+  }, [carregar]);
 
   // Todos os indicadores são calculados a partir dos dados reais da API
   const ind = useMemo(() => {
@@ -145,6 +162,9 @@ export default function Dashboard() {
     return (
       <Alert color="red" icon={<IconAlertCircle size={18} />} title="Não foi possível carregar o painel">
         {erro}
+        <Button mt="sm" size="xs" variant="light" onClick={() => void carregar()}>
+          Tentar novamente
+        </Button>
       </Alert>
     );
   }
@@ -153,7 +173,7 @@ export default function Dashboard() {
     <>
       <PageHeader titulo="Painel" descricao={`Bem-vindo, ${nome}. Resumo da oficina em ${hojePorExtenso}.`} />
 
-      {!dados || !ind ? (
+      {carregando || !dados || !ind ? (
         <Stack gap="md">
           <SimpleGrid cols={{ base: 1, xs: 2, lg: 4 }}>
             {Array.from({ length: 4 }).map((_, i) => (

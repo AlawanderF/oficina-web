@@ -1,4 +1,4 @@
-import { Badge, Button, Table, Text, TextInput } from "@mantine/core";
+import { Badge, Button, Table, Text, TextInput, VisuallyHidden } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { mecanicoSchema } from "shared";
@@ -54,7 +54,9 @@ export default function Mecanicos() {
             <Table.Th>Nome</Table.Th>
             <Table.Th>Especialidade</Table.Th>
             <Table.Th>Telefone</Table.Th>
-            <Table.Th w={90} />
+            <Table.Th w={90}>
+              <VisuallyHidden>Ações</VisuallyHidden>
+            </Table.Th>
           </Table.Tr>
         }
       >
@@ -72,7 +74,11 @@ export default function Mecanicos() {
             </Table.Td>
             <Table.Td>{formatarTelefone(m.telefone)}</Table.Td>
             <Table.Td>
-              <RowActions onEditar={() => crud.abrirEdicao(m)} onRemover={() => crud.pedirRemocao(m)} />
+              <RowActions
+                descricao={m.nome}
+                onEditar={() => crud.abrirEdicao(m)}
+                onRemover={() => crud.pedirRemocao(m)}
+              />
             </Table.Td>
           </Table.Tr>
         ))}
