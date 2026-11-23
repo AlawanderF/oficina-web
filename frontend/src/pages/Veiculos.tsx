@@ -1,7 +1,21 @@
-import { Button, NumberInput, Select, SimpleGrid, Stack, Table, Text, TextInput } from "@mantine/core";
+import {
+  Alert,
+  Anchor,
+  Button,
+  Loader,
+  NumberInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  VisuallyHidden,
+} from "@mantine/core";
 import Placa from "../components/Placa";
 import { IconPlus } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { veiculoSchema } from "shared";
 import ConfirmarRemocao from "../components/ConfirmarRemocao";
 import DataPanel from "../components/DataPanel";
@@ -9,7 +23,8 @@ import FormModal from "../components/FormModal";
 import PageHeader from "../components/PageHeader";
 import RowActions from "../components/RowActions";
 import { useCrud } from "../hooks/useCrud";
-import { contem, formatarCpf, formatarPlaca } from "../lib/formatos";
+import { useOpcoes } from "../hooks/useOpcoes";
+import { contem, formatarCpf, formatarPlaca, mascararPlaca } from "../lib/formatos";
 import { clientesApi, veiculosApi } from "../services/api";
 import type { Cliente, Veiculo } from "../services/types";
 
@@ -30,7 +45,7 @@ export default function Veiculos() {
     formVazio,
     nome: "Veículo",
     paraForm: (v: Veiculo): FormVeiculo => ({
-      placa: v.placa,
+      placa: mascararPlaca(v.placa),
       marca: v.marca,
       modelo: v.modelo,
       ano: v.ano,
@@ -45,13 +60,8 @@ export default function Veiculos() {
   });
 
   // Opções do select de cliente vêm da API (nunca se digita o id)
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  useEffect(() => {
-    clientesApi
-      .listar()
-      .then(setClientes)
-      .catch(() => setClientes([]));
-  }, [crud.modalAberto]);
+  const opcoesClientes = useOpcoes<Cliente>(clientesApi.listar, crud.modalAberto);
+  const clientes = opcoesClientes.dados;
 
   const [busca, setBusca] = useState("");
   const filtrados = crud.registros.filter((v) =>
@@ -86,7 +96,9 @@ export default function Veiculos() {
             <Table.Th>Veículo</Table.Th>
             <Table.Th>Ano</Table.Th>
             <Table.Th>Proprietário</Table.Th>
-            <Table.Th w={90} />
+            <Table.Th w={90}>
+              <VisuallyHidden>Ações</VisuallyHidden>
+            </Table.Th>
           </Table.Tr>
         }
       >
@@ -113,7 +125,11 @@ export default function Veiculos() {
               </Stack>
             </Table.Td>
             <Table.Td>
-              <RowActions onEditar={() => crud.abrirEdicao(v)} onRemover={() => crud.pedirRemocao(v)} />
+              <RowActions
+                descricao={formatarPlaca(v.placa)}
+                onEditar={() => crud.abrirEdicao(v)}
+                onRemover={() => crud.pedirRemocao(v)}
+              />
             </Table.Td>
           </Table.Tr>
         ))}
@@ -127,6 +143,24 @@ export default function Veiculos() {
         onFechar={crud.fecharModal}
         onSalvar={crud.salvar}
       >
+        {opcoesClientes.erro && (
+          <Alert color="red" title="Não foi possível carregar clientes">
+            {opcoesClientes.erro}
+            <Anchor component="button" onClick={() => void opcoesClientes.recarregar}>
+              {" "}
+              Tentar novamente
+            </Anchor>
+          </Alert>
+        )}
+        {!opcoesClientes.carregando && !opcoesClientes.erro && clientes.length === 0 && (
+          <Alert color="blue">
+            Cadastre um cliente primeiro:{" "}
+            <Anchor component={Link} to="/clientes">
+              Clientes
+            </Anchor>
+            .
+          </Alert>
+        )}
         <Select
           label="Proprietário"
           withAsterisk
@@ -135,6 +169,8 @@ export default function Veiculos() {
           nothingFoundMessage="Nenhum cliente encontrado"
           data={clientes.map((c) => ({ value: String(c.id), label: `${c.nome} · ${formatarCpf(c.cpf)}` }))}
           value={form.clienteId}
+          disabled={opcoesClientes.carregando || !!opcoesClientes.erro || clientes.length === 0}
+          rightSection={opcoesClientes.carregando ? <Loader size={16} /> : undefined}
           error={erros.clienteId}
           onChange={(v) => alterar("clienteId", v)}
         />
@@ -145,7 +181,7 @@ export default function Veiculos() {
             placeholder="ABC1D23"
             value={form.placa}
             error={erros.placa}
-            onChange={(e) => alterar("placa", e.currentTarget.value.toUpperCase())}
+            onChange={(e) => alterar("placa", mascararPlaca(e.currentTarget.value))}
             maxLength={8}
           />
           <NumberInput

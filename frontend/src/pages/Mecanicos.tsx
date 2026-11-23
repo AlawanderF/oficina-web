@@ -1,4 +1,4 @@
-import { Badge, Button, Table, Text, TextInput } from "@mantine/core";
+import { Badge, Button, Table, Text, TextInput, VisuallyHidden } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { mecanicoSchema } from "shared";
@@ -8,7 +8,7 @@ import FormModal from "../components/FormModal";
 import PageHeader from "../components/PageHeader";
 import RowActions from "../components/RowActions";
 import { useCrud } from "../hooks/useCrud";
-import { contem, formatarTelefone } from "../lib/formatos";
+import { contem, formatarTelefone, mascararTelefone } from "../lib/formatos";
 import { mecanicosApi } from "../services/api";
 import type { Mecanico } from "../services/types";
 
@@ -20,7 +20,11 @@ export default function Mecanicos() {
     schema: mecanicoSchema,
     formVazio,
     nome: "Mecânico",
-    paraForm: (m: Mecanico) => ({ nome: m.nome, especialidade: m.especialidade, telefone: m.telefone }),
+    paraForm: (m: Mecanico) => ({
+      nome: m.nome,
+      especialidade: m.especialidade,
+      telefone: formatarTelefone(m.telefone),
+    }),
   });
   const [busca, setBusca] = useState("");
 
@@ -54,7 +58,9 @@ export default function Mecanicos() {
             <Table.Th>Nome</Table.Th>
             <Table.Th>Especialidade</Table.Th>
             <Table.Th>Telefone</Table.Th>
-            <Table.Th w={90} />
+            <Table.Th w={90}>
+              <VisuallyHidden>Ações</VisuallyHidden>
+            </Table.Th>
           </Table.Tr>
         }
       >
@@ -72,7 +78,11 @@ export default function Mecanicos() {
             </Table.Td>
             <Table.Td>{formatarTelefone(m.telefone)}</Table.Td>
             <Table.Td>
-              <RowActions onEditar={() => crud.abrirEdicao(m)} onRemover={() => crud.pedirRemocao(m)} />
+              <RowActions
+                descricao={m.nome}
+                onEditar={() => crud.abrirEdicao(m)}
+                onRemover={() => crud.pedirRemocao(m)}
+              />
             </Table.Td>
           </Table.Tr>
         ))}
@@ -108,7 +118,8 @@ export default function Mecanicos() {
           placeholder="(11) 91234-5678"
           value={form.telefone}
           error={erros.telefone}
-          onChange={(e) => alterar("telefone", e.currentTarget.value)}
+          onChange={(e) => alterar("telefone", mascararTelefone(e.currentTarget.value))}
+          maxLength={15}
         />
       </FormModal>
 

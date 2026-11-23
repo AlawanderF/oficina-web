@@ -1,4 +1,4 @@
-import { Button, SimpleGrid, Table, Text, TextInput } from "@mantine/core";
+import { Button, SimpleGrid, Table, Text, TextInput, VisuallyHidden } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { clienteSchema } from "shared";
@@ -8,7 +8,7 @@ import FormModal from "../components/FormModal";
 import PageHeader from "../components/PageHeader";
 import RowActions from "../components/RowActions";
 import { useCrud } from "../hooks/useCrud";
-import { contem, formatarCpf, formatarTelefone } from "../lib/formatos";
+import { contem, formatarCpf, formatarTelefone, mascararCpf, mascararTelefone } from "../lib/formatos";
 import { clientesApi } from "../services/api";
 import type { Cliente } from "../services/types";
 
@@ -20,7 +20,12 @@ export default function Clientes() {
     schema: clienteSchema,
     formVazio,
     nome: "Cliente",
-    paraForm: (c: Cliente) => ({ nome: c.nome, cpf: c.cpf, telefone: c.telefone, email: c.email }),
+    paraForm: (c: Cliente) => ({
+      nome: c.nome,
+      cpf: formatarCpf(c.cpf),
+      telefone: formatarTelefone(c.telefone),
+      email: c.email,
+    }),
   });
   const [busca, setBusca] = useState("");
 
@@ -58,7 +63,9 @@ export default function Clientes() {
             <Table.Th>CPF</Table.Th>
             <Table.Th>Telefone</Table.Th>
             <Table.Th>E-mail</Table.Th>
-            <Table.Th w={90} />
+            <Table.Th w={90}>
+              <VisuallyHidden>Ações</VisuallyHidden>
+            </Table.Th>
           </Table.Tr>
         }
       >
@@ -73,7 +80,11 @@ export default function Clientes() {
             <Table.Td>{formatarTelefone(c.telefone)}</Table.Td>
             <Table.Td>{c.email}</Table.Td>
             <Table.Td>
-              <RowActions onEditar={() => crud.abrirEdicao(c)} onRemover={() => crud.pedirRemocao(c)} />
+              <RowActions
+                descricao={c.nome}
+                onEditar={() => crud.abrirEdicao(c)}
+                onRemover={() => crud.pedirRemocao(c)}
+              />
             </Table.Td>
           </Table.Tr>
         ))}
@@ -103,7 +114,8 @@ export default function Clientes() {
             placeholder="000.000.000-00"
             value={form.cpf}
             error={erros.cpf}
-            onChange={(e) => alterar("cpf", e.currentTarget.value)}
+            onChange={(e) => alterar("cpf", mascararCpf(e.currentTarget.value))}
+            maxLength={14}
           />
           <TextInput
             label="Telefone"
@@ -111,7 +123,8 @@ export default function Clientes() {
             placeholder="(11) 91234-5678"
             value={form.telefone}
             error={erros.telefone}
-            onChange={(e) => alterar("telefone", e.currentTarget.value)}
+            onChange={(e) => alterar("telefone", mascararTelefone(e.currentTarget.value))}
+            maxLength={15}
           />
         </SimpleGrid>
         <TextInput

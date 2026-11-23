@@ -14,6 +14,7 @@ export const swaggerSpec = {
     {
       name: "Clientes",
     },
+    { name: "Sistema" },
     {
       name: "Veículos",
     },
@@ -351,6 +352,23 @@ export const swaggerSpec = {
     },
   },
   paths: {
+    "/health": {
+      get: {
+        tags: ["Sistema"],
+        summary: "Verifica a disponibilidade da API",
+        responses: {
+          "200": {
+            description: "API disponível",
+            content: {
+              "application/json": {
+                schema: { type: "object", properties: { status: { type: "string", example: "ok" } } },
+                example: { status: "ok" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/auth/cadastro": {
       post: {
         tags: ["Autenticação"],
@@ -381,6 +399,14 @@ export const swaggerSpec = {
             description: "Dados inválidos — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    nome: "Nome inv\u00e1lido",
+                    email: "E-mail inv\u00e1lido",
+                    senha: "A senha deve ter pelo menos 8 caracteres",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -391,6 +417,14 @@ export const swaggerSpec = {
             description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    nome: "Nome inv\u00e1lido",
+                    email: "E-mail inv\u00e1lido",
+                    senha: "A senha deve ter pelo menos 8 caracteres",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -440,6 +474,15 @@ export const swaggerSpec = {
                     },
                   },
                 },
+                example: {
+                  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  usuario: {
+                    id: 1,
+                    nome: "Professor",
+                    email: "professor@oficina.com",
+                    criadoEm: "2026-11-22T12:00:00.000Z",
+                  },
+                },
               },
             },
           },
@@ -447,6 +490,10 @@ export const swaggerSpec = {
             description: "Dados inválidos — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: { email: "E-mail inv\u00e1lido", senha: "Senha \u00e9 obrigat\u00f3ria" },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -544,6 +591,15 @@ export const swaggerSpec = {
             description: "Dados inválidos — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    nome: "Nome deve ter pelo menos 3 caracteres",
+                    cpf: "CPF inv\u00e1lido",
+                    telefone: "Telefone inv\u00e1lido",
+                    email: "E-mail inv\u00e1lido",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -564,6 +620,15 @@ export const swaggerSpec = {
             description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    nome: "Nome deve ter pelo menos 3 caracteres",
+                    cpf: "CPF inv\u00e1lido",
+                    telefone: "Telefone inv\u00e1lido",
+                    email: "E-mail inv\u00e1lido",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -694,6 +759,15 @@ export const swaggerSpec = {
             description: "Dados inválidos — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    nome: "Nome deve ter pelo menos 3 caracteres",
+                    cpf: "CPF inv\u00e1lido",
+                    telefone: "Telefone inv\u00e1lido",
+                    email: "E-mail inv\u00e1lido",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -724,6 +798,15 @@ export const swaggerSpec = {
             description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    nome: "Nome deve ter pelo menos 3 caracteres",
+                    cpf: "CPF inv\u00e1lido",
+                    telefone: "Telefone inv\u00e1lido",
+                    email: "E-mail inv\u00e1lido",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -878,6 +961,16 @@ export const swaggerSpec = {
             description: "Dados inválidos ou registro relacionado inexistente — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    placa: "Placa inv?lida (ex.: ABC1D23)",
+                    marca: "Marca inv?lida",
+                    modelo: "Modelo inv\u00e1lido",
+                    ano: "Ano inv\u00e1lido",
+                    clienteId: "Selecione cliente",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -898,6 +991,16 @@ export const swaggerSpec = {
             description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    placa: "Placa inv?lida (ex.: ABC1D23)",
+                    marca: "Marca inv?lida",
+                    modelo: "Modelo inv\u00e1lido",
+                    ano: "Ano inv\u00e1lido",
+                    clienteId: "Selecione cliente",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -1028,6 +1131,16 @@ export const swaggerSpec = {
             description: "Dados inválidos ou registro relacionado inexistente — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    placa: "Placa inv?lida (ex.: ABC1D23)",
+                    marca: "Marca inv?lida",
+                    modelo: "Modelo inv\u00e1lido",
+                    ano: "Ano inv\u00e1lido",
+                    clienteId: "Selecione cliente",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -1058,6 +1171,16 @@ export const swaggerSpec = {
             description: "Valor repetido em campo único — mensagem no campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    placa: "Placa inv?lida (ex.: ABC1D23)",
+                    marca: "Marca inv?lida",
+                    modelo: "Modelo inv\u00e1lido",
+                    ano: "Ano inv\u00e1lido",
+                    clienteId: "Selecione cliente",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -1212,6 +1335,14 @@ export const swaggerSpec = {
             description: "Dados inválidos — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    nome: "Nome deve ter pelo menos 3 caracteres",
+                    especialidade: "Especialidade inv?lida",
+                    telefone: "Telefone inv\u00e1lido",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -1352,6 +1483,14 @@ export const swaggerSpec = {
             description: "Dados inválidos — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    nome: "Nome deve ter pelo menos 3 caracteres",
+                    especialidade: "Especialidade inv?lida",
+                    telefone: "Telefone inv\u00e1lido",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -1526,6 +1665,16 @@ export const swaggerSpec = {
             description: "Dados inválidos ou registro relacionado inexistente — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    veiculoId: "Selecione ve?culo",
+                    mecanicoId: "Selecione mec?nico",
+                    descricao: "Descri??o inv?lida",
+                    status: "Selecione status",
+                    valor: "Valor inv\u00e1lido",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },
@@ -1666,6 +1815,16 @@ export const swaggerSpec = {
             description: "Dados inválidos ou registro relacionado inexistente — mensagem por campo",
             content: {
               "application/json": {
+                example: {
+                  message: "Dados inv\u00e1lidos",
+                  erros: {
+                    veiculoId: "Selecione ve?culo",
+                    mecanicoId: "Selecione mec?nico",
+                    descricao: "Descri??o inv?lida",
+                    status: "Selecione status",
+                    valor: "Valor inv\u00e1lido",
+                  },
+                },
                 schema: {
                   $ref: "#/components/schemas/ErroValidacao",
                 },

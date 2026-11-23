@@ -2,6 +2,32 @@
 
 export const formatarCpf = (cpf: string) => cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
 
+export const mascararCpf = (valor: string) => {
+  const d = valor.replace(/\D/g, "").slice(0, 11);
+  return d
+    .replace(/^(\d{3})(\d)/, "$1.$2")
+    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1-$2");
+};
+
+export const mascararTelefone = (valor: string) => {
+  const d = valor.replace(/\D/g, "").slice(0, 11);
+  if (!d) return "";
+  if (d.length < 3) return `(${d}`;
+  const tamanhoLocal = d.length > 10 ? 5 : 4;
+  const parcial = d.slice(2);
+  if (parcial.length <= tamanhoLocal) return `(${d.slice(0, 2)}) ${parcial}`;
+  return `(${d.slice(0, 2)}) ${parcial.slice(0, tamanhoLocal)}-${parcial.slice(tamanhoLocal)}`;
+};
+
+export const mascararPlaca = (valor: string) => {
+  const d = valor
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(0, 7)
+    .toUpperCase();
+  return /^[A-Z]{3}\d{0,4}$/.test(d) && d.length > 3 ? `${d.slice(0, 3)}-${d.slice(3)}` : d;
+};
+
 export function formatarTelefone(tel: string) {
   if (tel.length === 11) return tel.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
   return tel.replace(/^(\d{2})(\d{4})(\d{4})$/, "($1) $2-$3");
