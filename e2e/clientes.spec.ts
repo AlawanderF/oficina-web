@@ -50,6 +50,6 @@ test.describe("Clientes", () => {
     await page.getByRole("dialog").getByRole("button", { name: "Remover" }).click();
 
     await expect(page.getByText("Não foi possível remover")).toBeVisible();
-    await expect(page.getByText("Ana Paula Souza")).toBeVisible();
+    await expect(page.getByText("Ana Paula Souza", { exact: true })).toBeVisible();
   });
 });
