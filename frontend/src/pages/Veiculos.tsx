@@ -9,7 +9,7 @@ import FormModal from "../components/FormModal";
 import PageHeader from "../components/PageHeader";
 import RowActions from "../components/RowActions";
 import { useCrud } from "../hooks/useCrud";
-import { contem, formatarCpf, formatarPlaca } from "../lib/formatos";
+import { contem, formatarCpf, formatarPlaca, mascararPlaca } from "../lib/formatos";
 import { clientesApi, veiculosApi } from "../services/api";
 import type { Cliente, Veiculo } from "../services/types";
 
@@ -145,7 +145,7 @@ export default function Veiculos() {
             placeholder="ABC1D23"
             value={form.placa}
             error={erros.placa}
-            onChange={(e) => alterar("placa", e.currentTarget.value.toUpperCase())}
+            onChange={(e) => alterar("placa", mascararPlaca(e.currentTarget.value))}
             maxLength={8}
           />
           <NumberInput

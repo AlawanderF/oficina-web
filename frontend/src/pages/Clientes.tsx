@@ -8,7 +8,7 @@ import FormModal from "../components/FormModal";
 import PageHeader from "../components/PageHeader";
 import RowActions from "../components/RowActions";
 import { useCrud } from "../hooks/useCrud";
-import { contem, formatarCpf, formatarTelefone } from "../lib/formatos";
+import { contem, formatarCpf, formatarTelefone, mascararCpf, mascararTelefone } from "../lib/formatos";
 import { clientesApi } from "../services/api";
 import type { Cliente } from "../services/types";
 
@@ -103,7 +103,8 @@ export default function Clientes() {
             placeholder="000.000.000-00"
             value={form.cpf}
             error={erros.cpf}
-            onChange={(e) => alterar("cpf", e.currentTarget.value)}
+            onChange={(e) => alterar("cpf", mascararCpf(e.currentTarget.value))}
+            maxLength={14}
           />
           <TextInput
             label="Telefone"
@@ -111,7 +112,8 @@ export default function Clientes() {
             placeholder="(11) 91234-5678"
             value={form.telefone}
             error={erros.telefone}
-            onChange={(e) => alterar("telefone", e.currentTarget.value)}
+            onChange={(e) => alterar("telefone", mascararTelefone(e.currentTarget.value))}
+            maxLength={15}
           />
         </SimpleGrid>
         <TextInput

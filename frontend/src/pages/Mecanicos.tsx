@@ -8,7 +8,7 @@ import FormModal from "../components/FormModal";
 import PageHeader from "../components/PageHeader";
 import RowActions from "../components/RowActions";
 import { useCrud } from "../hooks/useCrud";
-import { contem, formatarTelefone } from "../lib/formatos";
+import { contem, formatarTelefone, mascararTelefone } from "../lib/formatos";
 import { mecanicosApi } from "../services/api";
 import type { Mecanico } from "../services/types";
 
@@ -108,7 +108,8 @@ export default function Mecanicos() {
           placeholder="(11) 91234-5678"
           value={form.telefone}
           error={erros.telefone}
-          onChange={(e) => alterar("telefone", e.currentTarget.value)}
+          onChange={(e) => alterar("telefone", mascararTelefone(e.currentTarget.value))}
+          maxLength={15}
         />
       </FormModal>
 
