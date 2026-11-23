@@ -70,7 +70,11 @@ describe("mecanicoSchema", () => {
   });
 
   it("rejeita nome com menos de 3 letras", () => {
-    const resultado = mecanicoSchema.safeParse({ nome: "Al", especialidade: "Mecânica", telefone: "11988887777" });
+    const resultado = mecanicoSchema.safeParse({
+      nome: "Al",
+      especialidade: "Mecânica",
+      telefone: "11988887777",
+    });
     expect(resultado.success).toBe(false);
     if (!resultado.success) {
       expect(resultado.error.issues.find((issue) => issue.path[0] === "nome")?.message).toBe(
@@ -80,20 +84,26 @@ describe("mecanicoSchema", () => {
   });
 
   it("rejeita telefone sem DDD", () => {
-    expect(mecanicoSchema.safeParse({ nome: "Maria Silva", especialidade: "Mecânica", telefone: "98888777" }).success)
-      .toBe(false);
+    expect(
+      mecanicoSchema.safeParse({ nome: "Maria Silva", especialidade: "Mecânica", telefone: "98888777" })
+        .success,
+    ).toBe(false);
   });
 });
 
 describe("cadastroUsuarioSchema", () => {
   it("rejeita senha com menos de 8 caracteres", () => {
-    expect(cadastroUsuarioSchema.safeParse({ nome: "Maria Silva", email: "maria@email.com", senha: "curta" }).success)
-      .toBe(false);
+    expect(
+      cadastroUsuarioSchema.safeParse({ nome: "Maria Silva", email: "maria@email.com", senha: "curta" })
+        .success,
+    ).toBe(false);
   });
 
   it("remove espaços e converte o e-mail para minúsculas", () => {
-    expect(cadastroUsuarioSchema.parse({ nome: "Maria Silva", email: " Maria@Email.com ", senha: "senha123" }).email)
-      .toBe("maria@email.com");
+    expect(
+      cadastroUsuarioSchema.parse({ nome: "Maria Silva", email: " Maria@Email.com ", senha: "senha123" })
+        .email,
+    ).toBe("maria@email.com");
   });
 });
 
@@ -106,7 +116,9 @@ describe("loginSchema", () => {
     const resultado = loginSchema.safeParse({ email: "maria@email.com", senha: "" });
     expect(resultado.success).toBe(false);
     if (!resultado.success) {
-      expect(resultado.error.issues.find((issue) => issue.path[0] === "senha")?.message).toBe("Senha é obrigatória");
+      expect(resultado.error.issues.find((issue) => issue.path[0] === "senha")?.message).toBe(
+        "Senha é obrigatória",
+      );
     }
   });
 });
