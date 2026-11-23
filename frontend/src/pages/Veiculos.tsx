@@ -45,7 +45,7 @@ export default function Veiculos() {
     formVazio,
     nome: "Veículo",
     paraForm: (v: Veiculo): FormVeiculo => ({
-      placa: v.placa,
+      placa: mascararPlaca(v.placa),
       marca: v.marca,
       modelo: v.modelo,
       ano: v.ano,

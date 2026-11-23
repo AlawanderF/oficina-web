@@ -20,7 +20,12 @@ export default function Clientes() {
     schema: clienteSchema,
     formVazio,
     nome: "Cliente",
-    paraForm: (c: Cliente) => ({ nome: c.nome, cpf: c.cpf, telefone: c.telefone, email: c.email }),
+    paraForm: (c: Cliente) => ({
+      nome: c.nome,
+      cpf: formatarCpf(c.cpf),
+      telefone: formatarTelefone(c.telefone),
+      email: c.email,
+    }),
   });
   const [busca, setBusca] = useState("");
 

@@ -20,7 +20,11 @@ export default function Mecanicos() {
     schema: mecanicoSchema,
     formVazio,
     nome: "Mecânico",
-    paraForm: (m: Mecanico) => ({ nome: m.nome, especialidade: m.especialidade, telefone: m.telefone }),
+    paraForm: (m: Mecanico) => ({
+      nome: m.nome,
+      especialidade: m.especialidade,
+      telefone: formatarTelefone(m.telefone),
+    }),
   });
   const [busca, setBusca] = useState("");
 
