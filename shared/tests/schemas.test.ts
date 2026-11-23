@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { clienteSchema, cpfValido, dataValida, ordemServicoSchema, veiculoSchema } from "../src";
+import {
+  cadastroUsuarioSchema,
+  clienteSchema,
+  cpfValido,
+  dataValida,
+  loginSchema,
+  mecanicoSchema,
+  ordemServicoSchema,
+  veiculoSchema,
+} from "../src";
 
 describe("cpfValido", () => {
   it("aceita CPFs com dígitos verificadores corretos", () => {
@@ -50,6 +59,55 @@ describe("veiculoSchema", () => {
 
   it("rejeita placa inválida", () => {
     expect(veiculoSchema.safeParse({ ...base, placa: "12ABC34" }).success).toBe(false);
+  });
+});
+
+describe("mecanicoSchema", () => {
+  it("aceita dados válidos e normaliza o telefone", () => {
+    expect(
+      mecanicoSchema.parse({ nome: "Maria Silva", especialidade: "Mecânica", telefone: "(11) 98888-7777" }),
+    ).toEqual({ nome: "Maria Silva", especialidade: "Mecânica", telefone: "11988887777" });
+  });
+
+  it("rejeita nome com menos de 3 letras", () => {
+    const resultado = mecanicoSchema.safeParse({ nome: "Al", especialidade: "Mecânica", telefone: "11988887777" });
+    expect(resultado.success).toBe(false);
+    if (!resultado.success) {
+      expect(resultado.error.issues.find((issue) => issue.path[0] === "nome")?.message).toBe(
+        "Nome deve ter pelo menos 3 caracteres",
+      );
+    }
+  });
+
+  it("rejeita telefone sem DDD", () => {
+    expect(mecanicoSchema.safeParse({ nome: "Maria Silva", especialidade: "Mecânica", telefone: "98888777" }).success)
+      .toBe(false);
+  });
+});
+
+describe("cadastroUsuarioSchema", () => {
+  it("rejeita senha com menos de 8 caracteres", () => {
+    expect(cadastroUsuarioSchema.safeParse({ nome: "Maria Silva", email: "maria@email.com", senha: "curta" }).success)
+      .toBe(false);
+  });
+
+  it("remove espaços e converte o e-mail para minúsculas", () => {
+    expect(cadastroUsuarioSchema.parse({ nome: "Maria Silva", email: " Maria@Email.com ", senha: "senha123" }).email)
+      .toBe("maria@email.com");
+  });
+});
+
+describe("loginSchema", () => {
+  it("rejeita e-mail inválido", () => {
+    expect(loginSchema.safeParse({ email: "invalido", senha: "senha123" }).success).toBe(false);
+  });
+
+  it("rejeita senha vazia com a mensagem esperada", () => {
+    const resultado = loginSchema.safeParse({ email: "maria@email.com", senha: "" });
+    expect(resultado.success).toBe(false);
+    if (!resultado.success) {
+      expect(resultado.error.issues.find((issue) => issue.path[0] === "senha")?.message).toBe("Senha é obrigatória");
+    }
   });
 });
 
