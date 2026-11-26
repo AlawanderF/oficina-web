@@ -1,6 +1,6 @@
 # 🔧 AutoGestor: sistema de gestão para oficina mecânica
 
-🎥 **Vídeo de apresentação:** _COLE_O_LINK_DO_VIDEO_AQUI_
+🎥 **Vídeo de apresentação:** [Assistir no Google Drive](https://drive.google.com/file/d/13IqXF6fxtFW5eEUs3VXyF9Km-CKjOXIm/view?usp=sharing)
 
 [![CI](https://github.com/AlawanderF/oficina-web/actions/workflows/ci.yml/badge.svg)](https://github.com/AlawanderF/oficina-web/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/AlawanderF/oficina-web/actions/workflows/codeql.yml/badge.svg)](https://github.com/AlawanderF/oficina-web/actions/workflows/codeql.yml)
